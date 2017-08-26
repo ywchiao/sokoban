@@ -5,5 +5,5 @@
     <string name="str_game_intro">遊戲介紹</string>
     <string name="str_game_exit">離開遊戲</string>
     <string name="str_game_intro_desc">推箱子遊戲，又稱「倉庫番（sokoban) 」，玩家需要將箱子推到指定位置來過關。</string>
-    <string name="str_game_level">選擇關卡介面</string>
+    <string name="str_game_level">選擇遊戲關卡</string>
 </resources>

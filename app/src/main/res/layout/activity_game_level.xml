@@ -10,11 +10,19 @@
     tools:context="io.tut.sokoban.GameLevelActivity">
 
     <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
+        android:id="@+id/tv_select_game_level"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/str_game_level" />
+        android:gravity="center"
+        android:text="@string/str_game_level"
+        android:textSize="24sp" />
+
+    <GridView
+        android:id="@+id/gv_game_levels"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:numColumns="3"
+        android:layout_below="@+id/tv_select_game_level"
+        >
+        </GridView>
 </RelativeLayout>
