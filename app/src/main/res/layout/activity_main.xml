@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginBottom="45dp"
-        android:text="@string/label_game_app"
+        android:text="@string/str_game_app"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -25,21 +25,21 @@
         android:id="@+id/btn_game_start"
         android:layout_width="256dp"
         android:layout_height="wrap_content"
-        android:text="@string/btn_game_start"
+        android:text="@string/str_game_start"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <Button
         android:id="@+id/btn_game_intro"
         android:layout_width="256dp"
         android:layout_height="wrap_content"
-        android:text="@string/btn_game_intro"
+        android:text="@string/str_game_intro"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <Button
         android:id="@+id/btn_game_exit"
         android:layout_width="256dp"
         android:layout_height="wrap_content"
-        android:text="@string/btn_game_exit"
+        android:text="@string/str_game_exit"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
 </LinearLayout>

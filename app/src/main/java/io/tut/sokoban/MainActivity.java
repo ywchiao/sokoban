@@ -1,5 +1,6 @@
 package io.tut.sokoban;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,14 +17,20 @@ public class MainActivity extends AppCompatActivity {
         Button btnGameIntro = (Button) findViewById(R.id.btn_game_intro);
 
         btnGameIntro.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View view) {
-                Toast.makeText(
-                    MainActivity.this,
-                    "按了遊戲簡介按鈕",
-                    Toast.LENGTH_SHORT
-                ).show();
+                Intent intent = new Intent(MainActivity.this, GameIntroActivity.class);
+
+                startActivity(intent);
+            }
+        });
+
+        Button btnGameExit = (Button) findViewById(R.id.btn_game_exit);
+
+        btnGameExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
             }
         });
     }
