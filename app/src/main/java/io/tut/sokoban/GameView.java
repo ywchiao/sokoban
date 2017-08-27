@@ -75,8 +75,20 @@ class GameView extends View {
         int touch_x = (int)event.getX(); // 觸摸點的 x 坐標
         int touch_y = (int)event.getY(); // 觸摸點的 y 坐標
 
+        if (touch_above_to_man(touch_x, touch_y, mManRow, mManColumn)) {
+            mManRow --;
+        }
+
         if (touch_below_to_man(touch_x, touch_y, mManRow, mManColumn)) {
             mManRow ++;
+        }
+
+        if (touch_left_to_man(touch_x, touch_y, mManRow, mManColumn)) {
+            mManColumn --;
+        }
+
+        if (touch_right_to_man(touch_x, touch_y, mManRow, mManColumn)) {
+            mManColumn ++;
         }
 
         postInvalidate();
@@ -93,11 +105,35 @@ class GameView extends View {
         return new Rect(left, top, right, bottom);
     }
 
+    private boolean touch_above_to_man(int touch_x, int touch_y, int manRow, int manColumn) {
+        int aboveRow = manRow - 1;
+
+        Rect aboveRect = getRect(aboveRow, manColumn);
+
+        return aboveRect.contains(touch_x, touch_y);
+    }
+
     private boolean touch_below_to_man(int touch_x, int touch_y, int manRow, int manColumn) {
         int belowRow = manRow + 1;
 
         Rect belowRect = getRect(belowRow, manColumn);
 
         return belowRect.contains(touch_x, touch_y);
+    }
+
+    private boolean touch_left_to_man(int touch_x, int touch_y, int manRow, int manColumn) {
+        int leftColumn = manColumn - 1;
+
+        Rect leftRect = getRect(manRow, leftColumn);
+
+        return leftRect.contains(touch_x, touch_y);
+    }
+
+    private boolean touch_right_to_man(int touch_x, int touch_y, int manRow, int manColumn) {
+        int rightColumn = manColumn + 1;
+
+        Rect rightRect = getRect(manRow, rightColumn);
+
+        return rightRect.contains(touch_x, touch_y);
     }
 }
