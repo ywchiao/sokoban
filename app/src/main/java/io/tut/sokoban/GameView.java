@@ -81,23 +81,19 @@ class GameView extends View {
         int touch_y = (int)event.getY(); // 觸摸點的 y 坐標
 
         if (touch_above_to_man(touch_x, touch_y, mManRow, mManColumn)) {
-            mManRow = (mManRow == 0) ? mManRow : mManRow - 1;
-            mManFacing = GameBitmaps.FACE_UP;
+            handleUp();
         }
 
         if (touch_below_to_man(touch_x, touch_y, mManRow, mManColumn)) {
             handleDown();
-
         }
 
         if (touch_left_to_man(touch_x, touch_y, mManRow, mManColumn)) {
-            mManColumn = (mManColumn == 0) ? mManColumn : mManColumn - 1;
-            mManFacing = GameBitmaps.FACE_LEFT;
+            handleLeft();
         }
 
         if (touch_right_to_man(touch_x, touch_y, mManRow, mManColumn)) {
-            mManColumn = ((mManColumn + 1) == CELL_NUM_PER_LINE) ? mManColumn : mManColumn + 1;
-            mManFacing = GameBitmaps.FACE_RIGHT;
+            handleRight();
         }
 
         postInvalidate();
@@ -128,8 +124,62 @@ class GameView extends View {
         mManFacing = GameBitmaps.FACE_DOWN;
     }
 
+    private void handleLeft() {
+        if (isBoxLeftToMan()) {
+            if (mBoxColumn > 0) {
+                mBoxColumn --;
+                mManColumn --;
+            }
+        }
+        else {
+            mManColumn = (mManColumn == 0) ? mManColumn : mManColumn - 1;
+        }
+
+        mManFacing = GameBitmaps.FACE_LEFT;
+    }
+
+    private void handleRight() {
+        if (isBoxRightToMan()) {
+            if ((mBoxColumn + 1) < CELL_NUM_PER_LINE) {
+                mBoxColumn ++;
+                mManColumn ++;
+            }
+        }
+        else {
+            mManColumn = ((mManColumn + 1) == CELL_NUM_PER_LINE) ? mManColumn : mManColumn + 1;
+        }
+
+        mManFacing = GameBitmaps.FACE_RIGHT;
+    }
+
+    private void handleUp() {
+        if (isBoxAboveToMan()) {
+            if (mBoxRow > 0) {
+                mBoxRow --;
+                mManRow --;
+            }
+        }
+        else {
+            mManRow = (mManRow == 0) ? mManRow : mManRow - 1;
+        }
+
+        mManFacing = GameBitmaps.FACE_UP;
+    }
+
+    private boolean isBoxAboveToMan() {
+        return mBoxColumn == mManColumn && mBoxRow == mManRow - 1;
+    }
+
     private boolean isBoxBelowToMan() {
         return mBoxColumn == mManColumn && mBoxRow == mManRow + 1;
+    }
+
+    private boolean isBoxLeftToMan() {
+        return mBoxColumn == mManColumn - 1 && mBoxRow == mManRow;
+    }
+
+    private boolean isBoxRightToMan() {
+        return mBoxColumn == mManColumn + 1 && mBoxRow == mManRow;
     }
 
     private boolean touch_above_to_man(int touch_x, int touch_y, int manRow, int manColumn) {
