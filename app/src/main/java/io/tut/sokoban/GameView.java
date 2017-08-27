@@ -16,6 +16,9 @@ class GameView extends View {
     private int mManColumn = 0;
     private int mManFacing = GameBitmaps.FACE_RIGHT;
 
+    private int mBoxRow = 5;
+    private int mBoxColumn = 5;
+
     private GameBitmaps tileSheet = null;
 
     public GameView(Context context) {
@@ -53,6 +56,12 @@ class GameView extends View {
         Rect destRect = getRect(mManRow, mManColumn);
 
         canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
+
+        srcRect = tileSheet.getBoxOnFloor();
+
+        destRect = getRect(mBoxRow, mBoxColumn);
+
+        canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
     }
 
     @Override
@@ -77,8 +86,8 @@ class GameView extends View {
         }
 
         if (touch_below_to_man(touch_x, touch_y, mManRow, mManColumn)) {
-            mManRow = ((mManRow + 1) == CELL_NUM_PER_LINE) ? mManRow : mManRow + 1;
-            mManFacing = GameBitmaps.FACE_DOWN;
+            handleDown();
+
         }
 
         if (touch_left_to_man(touch_x, touch_y, mManRow, mManColumn)) {
@@ -103,6 +112,24 @@ class GameView extends View {
         int bottom = (int)((row + 1) * mCellWidth);
 
         return new Rect(left, top, right, bottom);
+    }
+
+    private void handleDown() {
+        if (isBoxBelowToMan()) {
+            if ((mBoxRow + 1) < CELL_NUM_PER_LINE) {
+                mBoxRow ++;
+                mManRow ++;
+            }
+        }
+        else {
+            mManRow = ((mManRow + 1) == CELL_NUM_PER_LINE) ? mManRow : mManRow + 1;
+        }
+
+        mManFacing = GameBitmaps.FACE_DOWN;
+    }
+
+    private boolean isBoxBelowToMan() {
+        return mBoxColumn == mManColumn && mBoxRow == mManRow + 1;
     }
 
     private boolean touch_above_to_man(int touch_x, int touch_y, int manRow, int manColumn) {
