@@ -21,6 +21,8 @@
         android:id="@+id/gv_game_levels"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/tv_select_game_level"
+        android:horizontalSpacing="8dp"
         android:numColumns="3"
-        android:layout_below="@+id/tv_select_game_level" />
+        android:verticalSpacing="8dp" />
 </RelativeLayout>

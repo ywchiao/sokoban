@@ -7,7 +7,7 @@ import android.widget.GridView;
 
 public class GameLevelActivity extends AppCompatActivity {
 
-    String[] levelList = new String[]{"第一關", "第二關", "第三關", "第四關"};
+    String[] levelList = new String[]{"第 1 關", "第 2 關", "第 3 關", "第 4 關"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
