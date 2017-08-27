@@ -1,31 +1,27 @@
 package io.tut.sokoban;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 class GameView extends View {
     private float mCellWidth;
     public static final int CELL_NUM_PER_LINE = 12;
-    private Bitmap tsBitmap = null;
 
     private int mManRow = 0;
     private int mManColumn = 0;
+    private int mManFacing = GameBitmaps.FACE_RIGHT;
 
-    // Tile Size
-    private static final int TILE_WIDTH = 64;
+    private GameBitmaps tileSheet = null;
 
     public GameView(Context context) {
         super(context);
 
-        tsBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.sokoban);
+        tileSheet = BitmapManager.getSokobanSkin(getResources());
     }
 
     @Override
@@ -51,12 +47,12 @@ class GameView extends View {
             canvas.drawLine(c * mCellWidth, 0, c * mCellWidth, CELL_NUM_PER_LINE * mCellWidth, linePaint);
         }
 
-        // 複製搬運工
-        Rect srcRect = new Rect(0, TILE_WIDTH * 2, TILE_WIDTH, TILE_WIDTH * 3);
+        // 繪製搬運工
+        Rect srcRect = tileSheet.getMan(mManFacing);
 
         Rect destRect = getRect(mManRow, mManColumn);
 
-        canvas.drawBitmap(tsBitmap, srcRect, destRect, null);
+        canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
     }
 
     @Override
@@ -77,18 +73,22 @@ class GameView extends View {
 
         if (touch_above_to_man(touch_x, touch_y, mManRow, mManColumn)) {
             mManRow = (mManRow == 0) ? mManRow : mManRow - 1;
+            mManFacing = GameBitmaps.FACE_UP;
         }
 
         if (touch_below_to_man(touch_x, touch_y, mManRow, mManColumn)) {
             mManRow = ((mManRow + 1) == CELL_NUM_PER_LINE) ? mManRow : mManRow + 1;
+            mManFacing = GameBitmaps.FACE_DOWN;
         }
 
         if (touch_left_to_man(touch_x, touch_y, mManRow, mManColumn)) {
             mManColumn = (mManColumn == 0) ? mManColumn : mManColumn - 1;
+            mManFacing = GameBitmaps.FACE_LEFT;
         }
 
         if (touch_right_to_man(touch_x, touch_y, mManRow, mManColumn)) {
             mManColumn = ((mManColumn + 1) == CELL_NUM_PER_LINE) ? mManColumn : mManColumn + 1;
+            mManFacing = GameBitmaps.FACE_RIGHT;
         }
 
         postInvalidate();
