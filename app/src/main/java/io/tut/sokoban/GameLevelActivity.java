@@ -7,7 +7,7 @@ import android.widget.GridView;
 
 public class GameLevelActivity extends AppCompatActivity {
 
-    String [] levelList = new String[] {"第一關", "第二關", "第三關", "第四關"};
+    String[] levelList = new String[]{"第一關", "第二關", "第三關", "第四關"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,7 +16,11 @@ public class GameLevelActivity extends AppCompatActivity {
 
         GridView gv_levels = (GridView) findViewById(R.id.gv_game_levels);
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, levelList);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
+            this,
+            R.layout.gv_levels_item_textview,
+            levelList
+        );
         gv_levels.setAdapter(arrayAdapter);
     }
 }
