@@ -76,19 +76,19 @@ class GameView extends View {
         int touch_y = (int)event.getY(); // 觸摸點的 y 坐標
 
         if (touch_above_to_man(touch_x, touch_y, mManRow, mManColumn)) {
-            mManRow --;
+            mManRow = (mManRow == 0) ? mManRow : mManRow - 1;
         }
 
         if (touch_below_to_man(touch_x, touch_y, mManRow, mManColumn)) {
-            mManRow ++;
+            mManRow = ((mManRow + 1) == CELL_NUM_PER_LINE) ? mManRow : mManRow + 1;
         }
 
         if (touch_left_to_man(touch_x, touch_y, mManRow, mManColumn)) {
-            mManColumn --;
+            mManColumn = (mManColumn == 0) ? mManColumn : mManColumn - 1;
         }
 
         if (touch_right_to_man(touch_x, touch_y, mManRow, mManColumn)) {
-            mManColumn ++;
+            mManColumn = ((mManColumn + 1) == CELL_NUM_PER_LINE) ? mManColumn : mManColumn + 1;
         }
 
         postInvalidate();
