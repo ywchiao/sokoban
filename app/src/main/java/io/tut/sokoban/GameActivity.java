@@ -11,8 +11,6 @@ public class GameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        int selected_level = getIntent().getIntExtra(KEY_SELECTED_LEVEL, 1);
-
         GameView gameView = new GameView(this);
 
         setContentView(gameView);

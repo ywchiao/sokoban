@@ -11,17 +11,17 @@ abstract class GameBitmaps {
 
     static Bitmap tileSheet = null;
 
-    abstract public Rect getBoxOnFloor();
+    abstract public Rect getTileBoxOnFloor();
 
-    abstract public Rect getBoxOnGoal();
+    abstract public Rect getTileBoxOnGoal();
 
-    abstract public Rect getFloorBlocked();
+    abstract public Rect getTileEmpty();
 
-    abstract public Rect getFloorGoal();
+    abstract public Rect getTileFloor();
 
-    abstract public Rect getFloorNormal();
+    abstract public Rect getTileGoal();
 
-    abstract public Rect getFloorOutside();
+    abstract public Rect getTileWall();
 
-    abstract public Rect getMan(int facing);
+    abstract public Rect getTileMan(int facing);
 }

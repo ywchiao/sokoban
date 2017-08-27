@@ -10,7 +10,7 @@ import android.view.View;
 
 class GameView extends View {
     private float mCellWidth;
-    public static final int CELL_NUM_PER_LINE = 12;
+    private static final int CELL_NUM_PER_LINE = 12;
 
     private int mManRow = 0;
     private int mManColumn = 0;
@@ -51,13 +51,13 @@ class GameView extends View {
         }
 
         // 繪製搬運工
-        Rect srcRect = tileSheet.getMan(mManFacing);
+        Rect srcRect = tileSheet.getTileMan(mManFacing);
 
         Rect destRect = getRect(mManRow, mManColumn);
 
         canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
 
-        srcRect = tileSheet.getBoxOnFloor();
+        srcRect = tileSheet.getTileBoxOnFloor();
 
         destRect = getRect(mBoxRow, mBoxColumn);
 
