@@ -11,6 +11,8 @@ abstract class GameBitmaps {
 
     static Bitmap tileSheet = null;
 
+    abstract public Rect getTileBlank();
+
     abstract public Rect getTileBoxOnFloor();
 
     abstract public Rect getTileBoxOnGoal();

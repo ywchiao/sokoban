@@ -2,15 +2,17 @@ package io.tut.sokoban;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 class GameView extends View {
-    private float mCellWidth;
+    private static final String TAG = "SOKOBAN";
+
     private static final int CELL_NUM_PER_LINE = 12;
+    private float mCellWidth;
 
     private int mManRow = 0;
     private int mManColumn = 0;
@@ -19,10 +21,13 @@ class GameView extends View {
     private int mBoxRow = 5;
     private int mBoxColumn = 5;
 
+    private GameActivity mGameActivity;
     private GameBitmaps tileSheet = null;
 
     public GameView(Context context) {
         super(context);
+
+        mGameActivity = (GameActivity) context;
 
         tileSheet = BitmapManager.getSokobanSkin(getResources());
     }
@@ -37,31 +42,8 @@ class GameView extends View {
         background.setColor(getResources().getColor(R.color.background));
         canvas.drawRect(0, 0, getWidth(), getHeight(), background);
 
-        Paint linePaint = new Paint();
-
-        // 繪制遊戲區域
-        linePaint.setColor(Color.BLACK);
-
-        for (int r = 0; r <= CELL_NUM_PER_LINE; r ++) {
-            canvas.drawLine(0, r * mCellWidth, getWidth(), r * mCellWidth, linePaint);
-        }
-
-        for (int c = 0; c <= CELL_NUM_PER_LINE; c ++) {
-            canvas.drawLine(c * mCellWidth, 0, c * mCellWidth, CELL_NUM_PER_LINE * mCellWidth, linePaint);
-        }
-
-        // 繪製搬運工
-        Rect srcRect = tileSheet.getTileMan(mManFacing);
-
-        Rect destRect = getRect(mManRow, mManColumn);
-
-        canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
-
-        srcRect = tileSheet.getTileBoxOnFloor();
-
-        destRect = getRect(mBoxRow, mBoxColumn);
-
-        canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
+        // 繪製遊戲局面
+        drawGameBoard(canvas);
     }
 
     @Override
@@ -99,6 +81,65 @@ class GameView extends View {
         postInvalidate();
 
         return true;
+    }
+
+    private void drawGameBoard(Canvas canvas) {
+        Rect srcRect;
+        Rect destRect;
+
+        StringBuffer[] labelInCells = mGameActivity.getCurrentState().getLabelInCells();
+
+        for (int r = 0; r < labelInCells.length; r ++) {
+            for (int c = 0; c < labelInCells[r].length(); c ++) {
+                destRect = getRect(r, c);
+
+                switch (labelInCells[r].charAt(c)) {
+                    case GameLevels.WALL:
+                        srcRect = tileSheet.getTileWall();
+
+                        break;
+
+                    case GameLevels.BOX:
+                        srcRect = tileSheet.getTileBoxOnFloor();
+
+                        break;
+
+                    case GameLevels.GOAL:
+                        srcRect = tileSheet.getTileGoal();
+
+                        break;
+
+                    case GameLevels.MAN:
+                        srcRect = tileSheet.getTileFloor();
+                        canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
+
+                        srcRect = tileSheet.getTileMan(mManFacing);
+
+                        break;
+
+                    case GameLevels.EMPTY:
+                    case GameLevels.EMPTY_ALT:
+                        srcRect = tileSheet.getTileEmpty();
+
+                        break;
+
+                    case GameLevels.FLOOR:
+                        srcRect = tileSheet.getTileFloor();
+
+                        break;
+
+                    default:
+                        // 不應該會到這裡，記錄一下
+                        Log.d(TAG, "drawGameBoard: (r, c) = (" + r + ", " + c + ")");
+
+                        srcRect = tileSheet.getTileBlank();
+
+                        break;
+                }
+
+                canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
+            }
+        }
     }
 
     private Rect getRect(int row, int column) {

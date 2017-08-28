@@ -12,6 +12,7 @@ class BitmapManager {
             private final int TILE_PER_LINE = 8;
             private final float TILE_WIDTH = GameBitmaps.tileSheet.getWidth() / TILE_PER_LINE;
 
+            private Rect tileBlank = null;
             private Rect tileBoxOnFloor = null;
             private Rect tileBoxOnGoal = null;
             private Rect tileEmpty = null;
@@ -30,6 +31,19 @@ class BitmapManager {
                 getTileManFaceRight(),
                 getTileManFaceUp()
             };
+
+            public Rect getTileBlank() {
+                if (tileBlank == null) {
+                    int left = (int) (TILE_WIDTH * 3);
+                    int top = (int) TILE_WIDTH;
+                    int right = (int) (TILE_WIDTH * 4) - 1;
+                    int bottom = (int) TILE_WIDTH - 1;
+
+                    tileBlank = new Rect(left, top, right, bottom);
+                }
+
+                return tileBlank;
+            }
 
             public Rect getTileBoxOnFloor() {
                 if (tileBoxOnFloor == null) {
@@ -57,30 +71,17 @@ class BitmapManager {
                 return tileBoxOnFloor;
             }
 
-            public Rect getTileWall() {
-                if (tileWall == null) {
+            public Rect getTileEmpty() {
+                if (tileEmpty == null) {
                     int left = (int) (TILE_WIDTH * 2);
-                    int top = 0;
-                    int right = (int) (TILE_WIDTH * 3) - 1;
-                    int bottom = (int) TILE_WIDTH - 1;
-
-                    tileWall = new Rect(left, top, right, bottom);
-                }
-
-                return tileWall;
-            }
-
-            public Rect getTileGoal() {
-                if (tileGoal == null) {
-                    int left = (int) TILE_WIDTH;
                     int top = (int) TILE_WIDTH;
-                    int right = (int) (TILE_WIDTH * 2) - 1;
+                    int right = (int) (TILE_WIDTH * 3) - 1;
                     int bottom = (int) (TILE_WIDTH * 2) - 1;
 
-                    tileGoal = new Rect(left, top, right, bottom);
+                    tileEmpty = new Rect(left, top, right, bottom);
                 }
 
-                return tileGoal;
+                return tileEmpty;
             }
 
             public Rect getTileFloor() {
@@ -96,21 +97,34 @@ class BitmapManager {
                 return tileFloor;
             }
 
-            public Rect getTileEmpty() {
-                if (tileEmpty == null) {
-                    int left = 0;
+            public Rect getTileGoal() {
+                if (tileGoal == null) {
+                    int left = (int) TILE_WIDTH;
                     int top = (int) TILE_WIDTH;
-                    int right = (int) TILE_WIDTH - 1;
+                    int right = (int) (TILE_WIDTH * 2) - 1;
                     int bottom = (int) (TILE_WIDTH * 2) - 1;
 
-                    tileEmpty = new Rect(left, top, right, bottom);
+                    tileGoal = new Rect(left, top, right, bottom);
                 }
 
-                return tileEmpty;
+                return tileGoal;
             }
 
             public Rect getTileMan(int to) {
                 return tileManFacing[to];
+            }
+
+            public Rect getTileWall() {
+                if (tileWall == null) {
+                    int left = (int) (TILE_WIDTH * 2);
+                    int top = 0;
+                    int right = (int) (TILE_WIDTH * 3) - 1;
+                    int bottom = (int) TILE_WIDTH - 1;
+
+                    tileWall = new Rect(left, top, right, bottom);
+                }
+
+                return tileWall;
             }
 
             private Rect getTileManFaceDown() {

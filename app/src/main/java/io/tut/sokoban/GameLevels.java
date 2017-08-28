@@ -4,22 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 class GameLevels {
-    private static final GameLevels INSTANCE = new GameLevels();
-
     public static final int DEFAULT_ROW_NUM = 12;
     public static final int DEFAULT_COLUMN_NUM = 12;
 
-    public static final char BOX = '$';
-    public static final char FLOOR = ' ';
-    public static final char GOAL = '.';
-    public static final char MAN = '@';
-    public static final char WALL = '#';
-    public static final char EMPTY = '-'; // or '_'
+    static final char BOX = '$';
+    static final char BOX_ON_GOAL = '*';
+    static final char FLOOR = ' ';
+    static final char GOAL = '.';
+    static final char MAN = '@';
+    static final char MAN_ON_GOAL = '+';
+    static final char WALL = '#';
+    static final char EMPTY = '-';
+    static final char EMPTY_ALT = '_';
 
-    public static final char BOX_ON_GOAL = '*';
-    public static final char MAN_ON_GOaL = '+';
-
-    private static final String[] LEVEL_I = {
+    private static String[] LEVEL_I = new String[] {
             "############",
             "#         .#",
             "#          #",
@@ -29,7 +27,7 @@ class GameLevels {
             "#          #",
             "#    $     #",
             "#    @     #",
-            "#        . #",
+            "#          #",
             "#          #",
             "############"
     };
@@ -49,17 +47,21 @@ class GameLevels {
             "------------"
     };
 
+    // 注意：因為 "初始化順序“ (initialization order) 的問題，
+    // static final GameLevels INSTACE "一定" 放在最後。
+    private static final GameLevels INSTANCE = new GameLevels();
+
     private final ArrayList<String[]> originalLevels = new ArrayList<>();
 
-    public static GameLevels getInstance() {
+    static GameLevels getInstance() {
         return INSTANCE;
     }
 
-    public String[] getLevel(int level) {
+    String[] getLevel(int level) {
         return originalLevels.get(level - 1);
     }
 
-    public List<String> getLevelList() {
+    List<String> getLevelList() {
         List<String> levelList = new ArrayList<>();
 
         int numOfLevels = originalLevels.size();
