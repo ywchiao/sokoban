@@ -14,12 +14,7 @@ class GameView extends View {
     private static final int CELL_NUM_PER_LINE = 12;
     private float mCellWidth;
 
-    private int mManRow = 0;
-    private int mManColumn = 0;
     private int mManFacing = GameBitmaps.FACE_RIGHT;
-
-    private int mBoxRow = 5;
-    private int mBoxColumn = 5;
 
     private GameActivity mGameActivity;
     private GameBitmaps tileSheet = null;
@@ -59,22 +54,27 @@ class GameView extends View {
             return true;
         }
 
+        GameState gameState = mGameActivity.getCurrentState();
+
+        int manRow = gameState.getManRow();
+        int manColumn = gameState.getManColumn();
+
         int touch_x = (int)event.getX(); // 觸摸點的 x 坐標
         int touch_y = (int)event.getY(); // 觸摸點的 y 坐標
 
-        if (touch_above_to_man(touch_x, touch_y, mManRow, mManColumn)) {
+        if (touch_above_to_man(touch_x, touch_y, manRow, manColumn)) {
             handleUp();
         }
 
-        if (touch_below_to_man(touch_x, touch_y, mManRow, mManColumn)) {
+        if (touch_below_to_man(touch_x, touch_y, manRow, manColumn)) {
             handleDown();
         }
 
-        if (touch_left_to_man(touch_x, touch_y, mManRow, mManColumn)) {
+        if (touch_left_to_man(touch_x, touch_y, manRow, manColumn)) {
             handleLeft();
         }
 
-        if (touch_right_to_man(touch_x, touch_y, mManRow, mManColumn)) {
+        if (touch_right_to_man(touch_x, touch_y, manRow, manColumn)) {
             handleRight();
         }
 
@@ -94,13 +94,24 @@ class GameView extends View {
                 destRect = getRect(r, c);
 
                 switch (labelInCells[r].charAt(c)) {
-                    case GameLevels.WALL:
-                        srcRect = tileSheet.getTileWall();
+                    case GameLevels.BOX:
+                        srcRect = tileSheet.getTileBoxOnFloor();
 
                         break;
 
-                    case GameLevels.BOX:
-                        srcRect = tileSheet.getTileBoxOnFloor();
+                    case GameLevels.BOX_ON_GOAL:
+                        srcRect = tileSheet.getTileBoxOnGoal();
+
+                        break;
+
+                    case GameLevels.EMPTY:
+                    case GameLevels.EMPTY_ALT:
+                        srcRect = tileSheet.getTileEmpty();
+
+                        break;
+
+                    case GameLevels.FLOOR:
+                        srcRect = tileSheet.getTileFloor();
 
                         break;
 
@@ -117,14 +128,16 @@ class GameView extends View {
 
                         break;
 
-                    case GameLevels.EMPTY:
-                    case GameLevels.EMPTY_ALT:
-                        srcRect = tileSheet.getTileEmpty();
+                    case GameLevels.MAN_ON_GOAL:
+                        srcRect = tileSheet.getTileGoal();
+                        canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
+
+                        srcRect = tileSheet.getTileMan(mManFacing);
 
                         break;
 
-                    case GameLevels.FLOOR:
-                        srcRect = tileSheet.getTileFloor();
+                    case GameLevels.WALL:
+                        srcRect = tileSheet.getTileWall();
 
                         break;
 
@@ -132,6 +145,7 @@ class GameView extends View {
                         // 不應該會到這裡，記錄一下
                         Log.d(TAG, "drawGameBoard: (r, c) = (" + r + ", " + c + ")");
 
+                        // 放個空白的 Tile，提醒使用者
                         srcRect = tileSheet.getTileBlank();
 
                         break;
@@ -152,75 +166,55 @@ class GameView extends View {
     }
 
     private void handleDown() {
-        if (isBoxBelowToMan()) {
-            if ((mBoxRow + 1) < CELL_NUM_PER_LINE) {
-                mBoxRow ++;
-                mManRow ++;
-            }
+        GameState gameState = mGameActivity.getCurrentState();
+
+        if (gameState.isBoxBelowToMan()) {
+            gameState.pushBoxDown();
         }
         else {
-            mManRow = ((mManRow + 1) == CELL_NUM_PER_LINE) ? mManRow : mManRow + 1;
+            gameState.moveManDown();
         }
 
         mManFacing = GameBitmaps.FACE_DOWN;
     }
 
     private void handleLeft() {
-        if (isBoxLeftToMan()) {
-            if (mBoxColumn > 0) {
-                mBoxColumn --;
-                mManColumn --;
-            }
+        GameState gameState = mGameActivity.getCurrentState();
+
+        if (gameState.isBoxLeftToMan()) {
+            gameState.pushBoxLeft();
         }
         else {
-            mManColumn = (mManColumn == 0) ? mManColumn : mManColumn - 1;
+            gameState.moveManLeft();
         }
 
         mManFacing = GameBitmaps.FACE_LEFT;
     }
 
     private void handleRight() {
-        if (isBoxRightToMan()) {
-            if ((mBoxColumn + 1) < CELL_NUM_PER_LINE) {
-                mBoxColumn ++;
-                mManColumn ++;
-            }
+        GameState gameState = mGameActivity.getCurrentState();
+
+        if (gameState.isBoxRightToMan()) {
+            gameState.pushBoxRight();
         }
         else {
-            mManColumn = ((mManColumn + 1) == CELL_NUM_PER_LINE) ? mManColumn : mManColumn + 1;
+            gameState.moveManRight();
         }
 
         mManFacing = GameBitmaps.FACE_RIGHT;
     }
 
     private void handleUp() {
-        if (isBoxAboveToMan()) {
-            if (mBoxRow > 0) {
-                mBoxRow --;
-                mManRow --;
-            }
+        GameState gameState = mGameActivity.getCurrentState();
+
+        if (gameState.isBoxAboveToMan()) {
+            gameState.pushBoxUp();
         }
         else {
-            mManRow = (mManRow == 0) ? mManRow : mManRow - 1;
+            gameState.moveManUp();
         }
 
         mManFacing = GameBitmaps.FACE_UP;
-    }
-
-    private boolean isBoxAboveToMan() {
-        return mBoxColumn == mManColumn && mBoxRow == mManRow - 1;
-    }
-
-    private boolean isBoxBelowToMan() {
-        return mBoxColumn == mManColumn && mBoxRow == mManRow + 1;
-    }
-
-    private boolean isBoxLeftToMan() {
-        return mBoxColumn == mManColumn - 1 && mBoxRow == mManRow;
-    }
-
-    private boolean isBoxRightToMan() {
-        return mBoxColumn == mManColumn + 1 && mBoxRow == mManRow;
     }
 
     private boolean touch_above_to_man(int touch_x, int touch_y, int manRow, int manColumn) {

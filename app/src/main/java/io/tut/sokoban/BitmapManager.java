@@ -65,10 +65,10 @@ class BitmapManager {
                     int right = (int) (TILE_WIDTH * 2) - 1;
                     int bottom = (int) TILE_WIDTH - 1;
 
-                    tileBoxOnFloor = new Rect(left, top, right, bottom);
+                    tileBoxOnGoal = new Rect(left, top, right, bottom);
                 }
 
-                return tileBoxOnFloor;
+                return tileBoxOnGoal;
             }
 
             public Rect getTileEmpty() {

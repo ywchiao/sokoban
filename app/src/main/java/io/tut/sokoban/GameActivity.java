@@ -4,8 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 public class GameActivity extends AppCompatActivity {
-
     public static final String KEY_SELECTED_LEVEL = "Selected_Level";
+
     private GameState mCurrentState;
 
     @Override
