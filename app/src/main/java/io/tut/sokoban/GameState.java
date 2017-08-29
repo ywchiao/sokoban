@@ -1,29 +1,37 @@
 package io.tut.sokoban;
 
+import android.graphics.Point;
+
+import java.util.HashSet;
+import java.util.Iterator;
+
 class GameState {
     private int mManRow;
     private int mManColumn;
 
+    private boolean mSolved;
+
+    private HashSet<Point> mGoalCells;
+
     private StringBuffer[] mLabelInCells;
 
     GameState(String[] initialState) {
+        mGoalCells = new HashSet<>();
+
         mLabelInCells = new StringBuffer[initialState.length];
 
         for (int r = 0; r < initialState.length; r ++) {
             mLabelInCells[r] = new StringBuffer(initialState[r]);
 
+            // 搜尋 _搬運工_ 和 _目標點_ 在關卡內的初始位置
             for (int c = 0; c < mLabelInCells[r].length(); c ++) {
-                switch (mLabelInCells[r].charAt(c)) {
-                    // 找到 _搬運工_ 在關卡內的初始位置
-                    case GameLevels.MAN:
-                        mManRow = r;
-                        mManColumn = c;
-
-                        break;
-
-                    default:
-                        // 刻意留白
-                        break;
+                if (isGoal(r, c)) {
+                    mGoalCells.add(new Point(r, c));
+                }
+                
+                if (isMan(r, c)) {
+                    mManRow = r;
+                    mManColumn = c;
                 }
             }
         }
@@ -57,10 +65,14 @@ class GameState {
         return ((mManColumn + 1) < GameLevels.DEFAULT_COLUMN_NUM) && isBox(mManRow, mManColumn + 1);
     }
 
+    boolean isPuzzleSolved() {
+        return mSolved;
+    }
+
     void moveManDown() {
         int belowRow = mManRow + 1;
 
-        if ((belowRow < GameLevels.DEFAULT_ROW_NUM) && isFloorOrGoal(belowRow, mManColumn)) {
+        if ((belowRow < GameLevels.DEFAULT_ROW_NUM) && isFloor(belowRow, mManColumn)) {
             moveManOut();
             mManRow = belowRow;
             moveManIn();
@@ -70,7 +82,7 @@ class GameState {
     void moveManLeft() {
         int leftColumn = mManColumn - 1;
 
-        if ((leftColumn >= 0) && isFloorOrGoal(mManRow, leftColumn)) {
+        if ((leftColumn >= 0) && isFloor(mManRow, leftColumn)) {
             moveManOut();
             mManColumn = leftColumn;
             moveManIn();
@@ -80,7 +92,7 @@ class GameState {
     void moveManRight() {
         int rightColumn = mManColumn + 1;
 
-        if ((rightColumn < GameLevels.DEFAULT_COLUMN_NUM) && isFloorOrGoal(mManRow, rightColumn)) {
+        if ((rightColumn < GameLevels.DEFAULT_COLUMN_NUM) && isFloor(mManRow, rightColumn)) {
             moveManOut();
             mManColumn = rightColumn;
             moveManIn();
@@ -90,7 +102,7 @@ class GameState {
     void moveManUp() {
         int aboveRow = mManRow - 1;
 
-        if ((aboveRow >= 0) && isFloorOrGoal(aboveRow, mManColumn)) {
+        if ((aboveRow >= 0) && isFloor(aboveRow, mManColumn)) {
             moveManOut();
             mManRow = aboveRow;
             moveManIn();
@@ -100,36 +112,56 @@ class GameState {
     void pushBoxDown() {
         int belowBoxRow = mManRow + 2;
 
-        if ((belowBoxRow < GameLevels.DEFAULT_ROW_NUM) && isFloorOrGoal(belowBoxRow, mManColumn)) {
+        if ((belowBoxRow < GameLevels.DEFAULT_ROW_NUM) && isFloor(belowBoxRow, mManColumn)) {
             moveBoxDown(mManRow + 1, mManColumn);
             moveManDown();
+
+            checkPuzzleSolved();
         }
     }
 
     void pushBoxLeft() {
         int leftBoxColumn = mManColumn - 2;
 
-        if ((leftBoxColumn >= 0) && isFloorOrGoal(mManRow, leftBoxColumn)) {
+        if ((leftBoxColumn >= 0) && isFloor(mManRow, leftBoxColumn)) {
             moveBoxLeft(mManRow, mManColumn - 1);
             moveManLeft();
+
+            checkPuzzleSolved();
         }
     }
 
     void pushBoxRight() {
         int rightBoxColumn = mManColumn + 2;
 
-        if ((rightBoxColumn < GameLevels.DEFAULT_COLUMN_NUM) && isFloorOrGoal(mManRow, rightBoxColumn)) {
+        if ((rightBoxColumn < GameLevels.DEFAULT_COLUMN_NUM) && isFloor(mManRow, rightBoxColumn)) {
             moveBoxRight(mManRow, mManColumn + 1);
             moveManRight();
+
+            checkPuzzleSolved();
         }
     }
 
     void pushBoxUp() {
         int aboveBoxRow = mManRow - 2;
 
-        if ((aboveBoxRow >= 0) && isFloorOrGoal(aboveBoxRow, mManColumn)) {
+        if ((aboveBoxRow >= 0) && isFloor(aboveBoxRow, mManColumn)) {
             moveBoxUp(mManRow - 1, mManColumn);
             moveManUp();
+
+            checkPuzzleSolved();
+        }
+    }
+
+    private void checkPuzzleSolved() {
+        mSolved = true;
+
+        for (Point cell : mGoalCells) {
+            if (isGoalUnachived(cell.x, cell.y)) {
+                mSolved = false;
+
+                break;
+            }
         }
     }
 
@@ -139,12 +171,30 @@ class GameState {
         return (label == GameLevels.BOX) || (label == GameLevels.BOX_ON_GOAL);
     }
 
-    private boolean isFloorOrGoal(int row, int column) {
+    private boolean isFloor(int row, int column) {
         char label = mLabelInCells[row].charAt(column);
 
-        return (label == GameLevels.FLOOR || label == GameLevels.GOAL);
+        return (label == GameLevels.FLOOR) || (label == GameLevels.GOAL);
     }
 
+    private boolean isGoal(int row, int column) {
+        char label = mLabelInCells[row].charAt(column);
+
+        return (label == GameLevels.GOAL) || (label == GameLevels.BOX_ON_GOAL) || (label == GameLevels.MAN_ON_GOAL);
+    }
+    
+    private boolean isGoalUnachived(int row, int column) {
+        char label = mLabelInCells[row].charAt(column);
+
+        return (label == GameLevels.GOAL) || (label == GameLevels.MAN_ON_GOAL);
+    }
+    
+    private boolean isMan(int row, int column) {
+        char label = mLabelInCells[row].charAt(column);
+
+        return (label == GameLevels.MAN) || (label == GameLevels.MAN_ON_GOAL);
+    }
+    
     private void moveBoxDown(int row, int column) {
         moveBoxOut(row, column);
         moveBoxIn(row + 1, column);

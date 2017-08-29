@@ -80,7 +80,7 @@ class GameView extends View {
 
         postInvalidate();
 
-        return true;
+        return false;
     }
 
     private void drawGameBoard(Canvas canvas) {
