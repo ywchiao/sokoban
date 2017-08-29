@@ -5,8 +5,8 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 
 class SoundEffect {
-    private int mSoundWalking;
     private int mSoundPushing;
+    private int mSoundWalking;
 
     private SoundPool mSoundPool;
 

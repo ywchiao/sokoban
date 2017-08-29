@@ -1,17 +1,16 @@
 package io.tut.sokoban;
 
 import android.app.DialogFragment;
-import android.media.AudioManager;
-import android.media.SoundPool;
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
 public class GameActivity extends AppCompatActivity {
-    private static final String TAG="SSSSSSS";
     public static final String KEY_SELECTED_LEVEL = "Selected_Level";
 
     private GameState mCurrentState;
+    private MediaPlayer mMediaPlayer;
     private SoundEffect mSoundEffect;
 
     @Override
@@ -28,12 +27,24 @@ public class GameActivity extends AppCompatActivity {
         setContentView(gameView);
     }
 
-    public GameState getCurrentState() {
-        return mCurrentState;
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        mMediaPlayer.stop();
+        mMediaPlayer.release();
+
+        mMediaPlayer = null;
     }
 
-    public SoundEffect getSoundEffect() {
-        return mSoundEffect;
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mMediaPlayer = MediaPlayer.create(this, R.raw.background);
+        mMediaPlayer.setLooping(true);
+
+        mMediaPlayer.start();
     }
 
     @Override
@@ -50,5 +61,13 @@ public class GameActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    public GameState getCurrentState() {
+        return mCurrentState;
+    }
+
+    public SoundEffect getSoundEffect() {
+        return mSoundEffect;
     }
 }
