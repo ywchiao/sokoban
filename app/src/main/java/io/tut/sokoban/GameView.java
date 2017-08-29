@@ -19,10 +19,14 @@ class GameView extends View {
     private GameActivity mGameActivity;
     private GameBitmaps tileSheet = null;
 
+    private SoundEffect mSoundEffect;
+
     public GameView(Context context) {
         super(context);
 
         mGameActivity = (GameActivity) context;
+
+        mSoundEffect = mGameActivity.getSoundEffect();
 
         tileSheet = BitmapManager.getSokobanSkin(getResources());
     }
@@ -170,9 +174,11 @@ class GameView extends View {
 
         if (gameState.isBoxBelowToMan()) {
             gameState.pushBoxDown();
+            mSoundEffect.playPushingEffect();
         }
         else {
             gameState.moveManDown();
+            mSoundEffect.playWalkingEffect();
         }
 
         mManFacing = GameBitmaps.FACE_DOWN;
@@ -183,9 +189,11 @@ class GameView extends View {
 
         if (gameState.isBoxLeftToMan()) {
             gameState.pushBoxLeft();
+            mSoundEffect.playPushingEffect();
         }
         else {
             gameState.moveManLeft();
+            mSoundEffect.playWalkingEffect();
         }
 
         mManFacing = GameBitmaps.FACE_LEFT;
@@ -196,9 +204,11 @@ class GameView extends View {
 
         if (gameState.isBoxRightToMan()) {
             gameState.pushBoxRight();
+            mSoundEffect.playPushingEffect();
         }
         else {
             gameState.moveManRight();
+            mSoundEffect.playWalkingEffect();
         }
 
         mManFacing = GameBitmaps.FACE_RIGHT;
@@ -209,9 +219,11 @@ class GameView extends View {
 
         if (gameState.isBoxAboveToMan()) {
             gameState.pushBoxUp();
+            mSoundEffect.playPushingEffect();
         }
         else {
             gameState.moveManUp();
+            mSoundEffect.playWalkingEffect();
         }
 
         mManFacing = GameBitmaps.FACE_UP;
