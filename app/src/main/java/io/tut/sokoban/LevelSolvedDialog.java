@@ -6,12 +6,14 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-public class PuzzleSolvedDialogFragment extends DialogFragment {
+public class LevelSolvedDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        builder.setMessage(R.string.str_puzzle_solved)
+        String message = getString(R.string.str_level_finished, getArguments().getInt("steps"));
+
+        builder.setMessage(message)
             .setPositiveButton(R.string.str_confirm, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                 }

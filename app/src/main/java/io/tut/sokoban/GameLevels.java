@@ -4,19 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 class GameLevels {
-    public static final int DEFAULT_ROW_NUM = 12;
-    public static final int DEFAULT_COLUMN_NUM = 12;
-
-    static final char BOX = '$';
-    static final char BOX_ON_GOAL = '*';
-    static final char FLOOR = ' ';
-    static final char GOAL = '.';
-    static final char MAN = '@';
-    static final char MAN_ON_GOAL = '+';
-    static final char WALL = '#';
-    static final char EMPTY = '-';
-    static final char EMPTY_ALT = '_';
-
     private static String[] LEVEL_I = new String[] {
             "############",
             "#         .#",

@@ -55,7 +55,13 @@ public class GameActivity extends AppCompatActivity {
 
 
         if (mCurrentState.isPuzzleSolved()) {
-            DialogFragment dialog = new PuzzleSolvedDialogFragment();
+            DialogFragment dialog = new LevelSolvedDialog();
+
+            // 取得 _通關步驟_ 長度傳遞給 Dialog
+            Bundle args = new Bundle();
+
+            args.putInt("steps", mCurrentState.getSolvingSteps().length());
+            dialog.setArguments(args);
 
             dialog.show(getFragmentManager(), "tag");
         }

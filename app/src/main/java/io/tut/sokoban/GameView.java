@@ -11,8 +11,10 @@ import android.view.View;
 class GameView extends View {
     private static final String TAG = "SOKOBAN";
 
-    private static final int CELL_NUM_PER_LINE = 12;
     private float mCellWidth;
+
+    private int mPaddingTop;
+    private int mPaddingLeft;
 
     private int mManFacing = GameBitmaps.FACE_RIGHT;
 
@@ -49,7 +51,18 @@ class GameView extends View {
     protected void onSizeChanged(int w, int h, int oldW, int oldH) {
         super.onSizeChanged(w, h, oldW, oldH);
 
-        mCellWidth = w / CELL_NUM_PER_LINE;
+        if (h > w) {
+            mCellWidth = w / mGameActivity.getCurrentState().NUM_COLUMN;
+
+            mPaddingTop = (int) Math.floor(((h / mCellWidth) - mGameActivity.getCurrentState().NUM_ROW) / 2);
+            mPaddingLeft = 0;
+        }
+        else {
+            mCellWidth = h / mGameActivity.getCurrentState().NUM_ROW;
+
+            mPaddingTop = 0;
+            mPaddingLeft = (int) Math.floor(((w / mCellWidth) - mGameActivity.getCurrentState().NUM_COLUMN) / 2);
+        }
     }
 
     @Override
@@ -98,33 +111,33 @@ class GameView extends View {
                 destRect = getRect(r, c);
 
                 switch (labelInCells[r].charAt(c)) {
-                    case GameLevels.BOX:
+                    case Sokoban.BOX:
                         srcRect = tileSheet.getTileBoxOnFloor();
 
                         break;
 
-                    case GameLevels.BOX_ON_GOAL:
+                    case Sokoban.BOX_ON_GOAL:
                         srcRect = tileSheet.getTileBoxOnGoal();
 
                         break;
 
-                    case GameLevels.EMPTY:
-                    case GameLevels.EMPTY_ALT:
+                    case Sokoban.EMPTY:
+                    case Sokoban.EMPTY_ALT:
                         srcRect = tileSheet.getTileEmpty();
 
                         break;
 
-                    case GameLevels.FLOOR:
+                    case Sokoban.FLOOR:
                         srcRect = tileSheet.getTileFloor();
 
                         break;
 
-                    case GameLevels.GOAL:
+                    case Sokoban.GOAL:
                         srcRect = tileSheet.getTileGoal();
 
                         break;
 
-                    case GameLevels.MAN:
+                    case Sokoban.MAN:
                         srcRect = tileSheet.getTileFloor();
                         canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
 
@@ -132,7 +145,7 @@ class GameView extends View {
 
                         break;
 
-                    case GameLevels.MAN_ON_GOAL:
+                    case Sokoban.MAN_ON_GOAL:
                         srcRect = tileSheet.getTileGoal();
                         canvas.drawBitmap(GameBitmaps.tileSheet, srcRect, destRect, null);
 
@@ -140,7 +153,7 @@ class GameView extends View {
 
                         break;
 
-                    case GameLevels.WALL:
+                    case Sokoban.WALL:
                         srcRect = tileSheet.getTileWall();
 
                         break;
@@ -161,10 +174,10 @@ class GameView extends View {
     }
 
     private Rect getRect(int row, int column) {
-        int left = (int)(column * mCellWidth);
-        int top = (int)(row * mCellWidth);
-        int right = (int)((column + 1) * mCellWidth);
-        int bottom = (int)((row + 1) * mCellWidth);
+        int left = (int)((mPaddingLeft + column) * mCellWidth);
+        int top = (int)((mPaddingTop + row) * mCellWidth);
+        int right = (int)((mPaddingLeft + column + 1) * mCellWidth);
+        int bottom = (int)((mPaddingTop + row + 1) * mCellWidth);
 
         return new Rect(left, top, right, bottom);
     }
@@ -173,11 +186,13 @@ class GameView extends View {
         GameState gameState = mGameActivity.getCurrentState();
 
         if (gameState.isBoxBelowToMan()) {
-            gameState.pushBoxDown();
+            gameState.redoStep(Sokoban.PUSH_DOWN);
+
             mSoundEffect.playPushingEffect();
         }
         else {
-            gameState.moveManDown();
+            gameState.redoStep(Sokoban.MOVE_DOWN);
+
             mSoundEffect.playWalkingEffect();
         }
 
@@ -188,11 +203,13 @@ class GameView extends View {
         GameState gameState = mGameActivity.getCurrentState();
 
         if (gameState.isBoxLeftToMan()) {
-            gameState.pushBoxLeft();
+            gameState.redoStep(Sokoban.PUSH_LEFT);
+
             mSoundEffect.playPushingEffect();
         }
         else {
-            gameState.moveManLeft();
+            gameState.redoStep(Sokoban.MOVE_LEFT);
+
             mSoundEffect.playWalkingEffect();
         }
 
@@ -203,11 +220,13 @@ class GameView extends View {
         GameState gameState = mGameActivity.getCurrentState();
 
         if (gameState.isBoxRightToMan()) {
-            gameState.pushBoxRight();
+            gameState.redoStep(Sokoban.PUSH_RIGHT);
+
             mSoundEffect.playPushingEffect();
         }
         else {
-            gameState.moveManRight();
+            gameState.redoStep(Sokoban.MOVE_RIGHT);
+
             mSoundEffect.playWalkingEffect();
         }
 
@@ -218,11 +237,13 @@ class GameView extends View {
         GameState gameState = mGameActivity.getCurrentState();
 
         if (gameState.isBoxAboveToMan()) {
-            gameState.pushBoxUp();
+            gameState.redoStep(Sokoban.PUSH_UP);
+
             mSoundEffect.playPushingEffect();
         }
         else {
-            gameState.moveManUp();
+            gameState.redoStep(Sokoban.MOVE_UP);
+
             mSoundEffect.playWalkingEffect();
         }
 

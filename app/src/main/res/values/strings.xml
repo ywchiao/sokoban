@@ -8,5 +8,5 @@
     <string name="str_game_level">選擇遊戲關卡</string>
     <string name="str_confirm">確 認</string>
     <string name="str_cancel">取 消</string>
-    <string name="str_puzzle_solved">恭喜過關!!</string>
+    <string name="str_level_finished">恭喜過關!!\n\n你共使用了：%1$d 步通過這一關。</string>
 </resources>
