@@ -260,7 +260,7 @@ class GameView extends View {
 
     private void handleButtonPane(GameState gameState, int touch_x, int touch_y) {
         for (TuTButton button : mButtons) {
-            if (button.isActivated() && button.pressed(touch_x, touch_y)) {
+            if (button.isActivated() && button.isPressed(touch_x, touch_y)) {
                 if (getResources().getString(R.string.str_btn_quit).equals(button.getLabel())) {
                     gameState.setState(GameState.STUCK);
 

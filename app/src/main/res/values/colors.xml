@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="colorBackground">#3500FFFF</color>
-    <color name="colorElapsedTime">#FFF00000</color>
+    <color name="colorElapsedTime">#FFF5FFFA</color>
     <color name="colorMidnightBlue">#FF191970</color>
     <color name="colorMintCream">#FFF5FFFA</color>
 </resources>

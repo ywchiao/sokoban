@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class GameLevels {
-    private static String[] LEVEL_I = new String[] {
+    private static final String[] LEVEL_I = new String[] {
             "############",
             "#         .#",
             "#          #",

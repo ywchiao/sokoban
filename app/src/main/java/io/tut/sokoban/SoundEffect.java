@@ -5,10 +5,10 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 
 class SoundEffect {
-    private int mSoundPushing;
-    private int mSoundWalking;
+    private final int mSoundPushing;
+    private final int mSoundWalking;
 
-    private SoundPool mSoundPool;
+    private final SoundPool mSoundPool;
 
     SoundEffect(Context context) {
         mSoundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 1);

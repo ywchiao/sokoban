@@ -21,20 +21,21 @@ class GameState {
     final int NUM_ROW;
     final int NUM_COLUMN;
 
+    private final StringBuffer mUndoHistory;
+    private final StringBuffer mSolvingSteps;
+
+    private final StringBuffer[] mLabelInCells;
+
+    private final HashSet<Point> mGoalCells;
+
+    private int mLastStep;
+
     private int mManRow;
     private int mManColumn;
 
     private int mState;
-    private int mLastStep;
 
     private String mElapsedTime;
-
-    private StringBuffer[] mLabelInCells;
-
-    private StringBuffer mUndoHistory;
-    private StringBuffer mSolvingSteps;
-
-    private HashSet<Point> mGoalCells;
 
     GameState(String[] initialState) {
         mGoalCells = new HashSet<>();
@@ -47,15 +48,15 @@ class GameState {
 
         mLabelInCells = new StringBuffer[NUM_ROW];
 
-        for (int r = 0; r < NUM_ROW; r ++) {
+        for (int r = 0; r < NUM_ROW; r++) {
             mLabelInCells[r] = new StringBuffer(initialState[r]);
 
             // 搜尋 _搬運工_ 和 _目標點_ 在關卡內的初始位置
-            for (int c = 0; c < NUM_COLUMN; c ++) {
+            for (int c = 0; c < NUM_COLUMN; c++) {
                 if (isGoal(r, c)) {
                     mGoalCells.add(new Point(r, c));
                 }
-                
+
                 if (isMan(r, c)) {
                     mManRow = r;
                     mManColumn = c;
@@ -283,13 +284,13 @@ class GameState {
 
         return (label == Sokoban.GOAL) || (label == Sokoban.BOX_ON_GOAL) || (label == Sokoban.MAN_ON_GOAL);
     }
-    
+
     private boolean isGoalUnachived(int row, int column) {
         char label = mLabelInCells[row].charAt(column);
 
         return (label == Sokoban.GOAL) || (label == Sokoban.MAN_ON_GOAL);
     }
-    
+
     private boolean isMan(int row, int column) {
         char label = mLabelInCells[row].charAt(column);
 

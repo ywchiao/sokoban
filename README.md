@@ -13,7 +13,7 @@
 
      + [Sokoban Clone Tiles | OpenGameArt.org] (https://opengameart.org/content/sokoban-clone-tiles)
 
-     + 作者 (author)：Tammy Spahn (Vellidragon).]
+     + 作者 (author)：Tammy Spahn (Vellidragon)
 
      + 授權 (license)： CC0 (PUBLIC DOMAIN)
 
