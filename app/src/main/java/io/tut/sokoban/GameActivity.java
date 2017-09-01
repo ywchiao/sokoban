@@ -93,7 +93,7 @@ public class GameActivity extends AppCompatActivity {
         if ((mCurrentState.getState() == GameState.SOLVED) || (mCurrentState.getState() == GameState.STUCK)) {
             mTimerHandler.removeCallbacks(mTimer);
 
-            DialogFragment dialog = new LevelSolvedDialog();
+            DialogFragment dialog = new LevelClosingDialog();
 
             // 取得 _通關步驟_ 長度傳遞給 Dialog
             Bundle args = new Bundle();

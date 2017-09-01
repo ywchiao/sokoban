@@ -6,7 +6,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-public class LevelSolvedDialog extends DialogFragment {
+public class LevelClosingDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         String message;

@@ -20,12 +20,16 @@ class GameView extends View {
     private float mButtonGap;
     private float mButtonWidth;
 
-    private int mManFacing = GameBitmaps.FACE_RIGHT;
+    private float mTimerTextSize;
 
-    private String mElapsedTime;
+    private int mManFacing = GameBitmaps.FACE_RIGHT;
 
     private GameActivity mGameActivity;
     private GameBitmaps tileSheet = null;
+
+    private Paint mPaint;
+
+    private Rect mTimerBounds;
 
     private SoundEffect mSoundEffect;
 
@@ -33,8 +37,6 @@ class GameView extends View {
 
     public GameView(Context context) {
         super(context);
-
-        mElapsedTime = getResources().getString(R.string.str_elapsed_time, 0, 0, 0, 0);
 
         mGameActivity = (GameActivity) context;
 
@@ -49,6 +51,10 @@ class GameView extends View {
         TuTButton.setTextColor(ContextCompat.getColor(context, R.color.colorMidnightBlue));
         TuTButton.setBackgroundColor(ContextCompat.getColor(context, R.color.colorMintCream));
 
+        mPaint = new Paint();
+
+        mTimerBounds = new Rect();
+
         tileSheet = BitmapManager.getSokobanSkin(getResources());
     }
 
@@ -56,11 +62,9 @@ class GameView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        Paint background = new Paint();
-
         // 背景色
-        background.setColor(ContextCompat.getColor(mGameActivity, R.color.colorBackground));
-        canvas.drawRect(0, 0, getWidth(), getHeight(), background);
+        mPaint.setColor(ContextCompat.getColor(mGameActivity, R.color.colorBackground));
+        canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
 
         // 繪製遊戲局面
         drawGameBoard(canvas);
@@ -83,6 +87,8 @@ class GameView extends View {
 
             mButtonWidth = w / 4;
             mButtonGap = mButtonWidth / 6;
+
+            setTimerBounds(w);
         }
         else {
             mCellWidth = h / mGameActivity.getCurrentState().NUM_ROW;
@@ -92,6 +98,8 @@ class GameView extends View {
 
             mButtonWidth = h / 5;
             mButtonGap = mButtonWidth / 3;
+
+            setTimerBounds(h);
         }
 
         setButtonSize();
@@ -205,17 +213,15 @@ class GameView extends View {
     }
 
     private void drawGameElapsedTime(Canvas canvas) {
-        String elapsedTime = mGameActivity.getCurrentState().getElapsedTime();
+        // 文字顏色
+        mPaint.setColor(ContextCompat.getColor(mGameActivity, R.color.colorMintCream));
 
-        Paint textPen = new Paint();
-        float scale = getResources().getDisplayMetrics().density;
-
-        // 背景色
-        textPen.setColor(ContextCompat.getColor(mGameActivity, R.color.colorElapsedTime));
-        textPen.setStyle(Paint.Style.FILL);
-        textPen.setTextSize((int) (20 * scale));
-
-        canvas.drawText(elapsedTime, 0, 50, textPen);
+        canvas.drawText(
+            mGameActivity.getCurrentState().getElapsedTime(),
+            mTimerBounds.left,
+            mTimerBounds.top + (mTimerBounds.height() - (mPaint.ascent() + mPaint.descent())) / 2,
+            mPaint
+        );
     }
 
     private Rect getRect(int row, int column) {
@@ -358,6 +364,25 @@ class GameView extends View {
                 }
             }
         }
+    }
+
+    private void setTimerBounds(int width) {
+        String elapsedTime = mGameActivity.getCurrentState().getElapsedTime();
+
+        mPaint.setTextSize(48f);
+        mPaint.getTextBounds(elapsedTime, 0, elapsedTime.length(), mTimerBounds);
+
+        mTimerTextSize = 24f * (mCellWidth / mTimerBounds.height());
+
+        mPaint.setTextSize(mTimerTextSize);
+        mPaint.getTextBounds(elapsedTime, 0, elapsedTime.length(), mTimerBounds);
+
+        mTimerBounds = new Rect(
+            (int) (width - (mTimerBounds.width() + mButtonGap)),
+            (int) (mCellWidth * mPaddingTop),
+            (int) (width - mButtonGap),
+            (int) (mCellWidth * (mPaddingTop + 1))
+        );
     }
 
     private void setButtonSize() {
