@@ -8,21 +8,38 @@ import java.util.HashSet;
 class GameState {
     private static final String TAG = "SOKOBAN";
 
+    static final int PAUSED = 0;
+    static final int STARTED = 1;
+    static final int GAMING = 2;
+    static final int STUCK = 3;
+    static final int SOLVED = 4;
+
+    static final int STEP_BLOCKED = 0;
+    static final int STEP_MOVING = 1;
+    static final int STEP_PUSHING = 2;
+
     final int NUM_ROW;
     final int NUM_COLUMN;
 
     private int mManRow;
     private int mManColumn;
 
+    private int mState;
+    private int mLastStep;
+
+    private String mElapsedTime;
+
+    private StringBuffer[] mLabelInCells;
+
+    private StringBuffer mUndoHistory;
     private StringBuffer mSolvingSteps;
 
     private HashSet<Point> mGoalCells;
 
-    private StringBuffer[] mLabelInCells;
-
     GameState(String[] initialState) {
         mGoalCells = new HashSet<>();
 
+        mUndoHistory = new StringBuffer();
         mSolvingSteps = new StringBuffer();
 
         NUM_ROW = initialState.length;
@@ -51,10 +68,23 @@ class GameState {
         return mLabelInCells;
     }
 
+    int getState() {
+        return mState;
+    }
+
+    String getElapsedTime() {
+        return mElapsedTime;
+    }
+
     boolean redoStep(char step) {
         boolean done;
 
         switch (step) {
+            case Sokoban.REDO_STEP:
+                done = prevStep();
+
+                break;
+
             case Sokoban.MOVE_DOWN:
                 done = moveManDown();
 
@@ -105,13 +135,23 @@ class GameState {
         }
 
         if (done) {
+            setLastStep(step);
+
             mSolvingSteps.append(step);
         }
 
         return done;
     }
 
-    char undoStep() {
+    void resetUndoHistory() {
+        mUndoHistory.setLength(0);
+    }
+
+    void setState(int state) {
+        mState = state;
+    }
+
+    void undoStep() {
         char step = mSolvingSteps.charAt(mSolvingSteps.length() - 1);
 
         switch (step) {
@@ -136,40 +176,58 @@ class GameState {
                 break;
 
             case Sokoban.PUSH_DOWN:
-                moveBoxUp(mManRow + 1, mManColumn);
-                moveManUp();
+                moveManRight();
+                moveBoxUp(mManRow + 2, mManColumn);
 
                 break;
 
             case Sokoban.PUSH_LEFT:
-                moveBoxRight(mManRow, mManColumn - 1);
                 moveManRight();
-
+                moveBoxRight(mManRow, mManColumn - 2);
 
                 break;
 
             case Sokoban.PUSH_RIGHT:
-                moveBoxLeft(mManRow, mManColumn + 1);
                 moveManLeft();
+                moveBoxLeft(mManRow, mManColumn + 2);
 
                 break;
 
             case Sokoban.PUSH_UP:
-                moveBoxDown(mManRow - 1, mManColumn);
                 moveManDown();
+                moveBoxDown(mManRow - 2, mManColumn);
 
                 break;
 
             default:
-                // 不應該到這兒，記露一下
+                // 不應該到這兒，記錄一下
                 Log.d(TAG, "undoStep: " + step);
 
                 break;
         }
 
-        mSolvingSteps.deleteCharAt(mSolvingSteps.length() - 1);
+        setLastStep(step);
 
-        return step;
+        mUndoHistory.append(step);
+
+        mSolvingSteps.deleteCharAt(mSolvingSteps.length() - 1);
+    }
+
+    void updateElapsedTime(String elapsedTime) {
+        mElapsedTime = elapsedTime;
+    }
+
+    void updateState() {
+        if (isPuzzleSolved()) {
+            mState = SOLVED;
+        }
+        else if (mState == SOLVED) {
+            mState = GAMING;
+        }
+    }
+
+    int getLastStep() {
+        return mLastStep;
     }
 
     int getManColumn() {
@@ -200,18 +258,12 @@ class GameState {
         return ((mManColumn + 1) < NUM_COLUMN) && isBox(mManRow, mManColumn + 1);
     }
 
-    boolean isPuzzleSolved() {
-        boolean mSolved = true;
+    boolean isRedoable() {
+        return (mUndoHistory.length() > 0);
+    }
 
-        for (Point cell : mGoalCells) {
-            if (isGoalUnachived(cell.x, cell.y)) {
-                mSolved = false;
-
-                break;
-            }
-        }
-
-        return mSolved;
+    boolean isUndoable() {
+        return (mSolvingSteps.length() > 0);
     }
 
     private boolean isBox(int row, int column) {
@@ -242,6 +294,20 @@ class GameState {
         char label = mLabelInCells[row].charAt(column);
 
         return (label == Sokoban.MAN) || (label == Sokoban.MAN_ON_GOAL);
+    }
+
+    private boolean isPuzzleSolved() {
+        boolean solved = true;
+
+        for (Point cell : mGoalCells) {
+            if (isGoalUnachived(cell.x, cell.y)) {
+                solved = false;
+
+                break;
+            }
+        }
+
+        return solved;
     }
 
     private void moveBoxDown(int row, int column) {
@@ -364,6 +430,16 @@ class GameState {
         }
     }
 
+    private boolean prevStep() {
+        char step = mUndoHistory.charAt(mUndoHistory.length() - 1);
+
+        mUndoHistory.deleteCharAt(mUndoHistory.length() - 1);
+
+        redoStep(step);
+
+        return false;
+    }
+
     private boolean pushBoxDown() {
         boolean done = false;
 
@@ -422,5 +498,15 @@ class GameState {
         }
 
         return done;
+    }
+
+    private void setLastStep(char step) {
+        if (Sokoban.STEP_MOVING.indexOf(step) > -1) {
+            mLastStep = STEP_MOVING;
+        }
+
+        if (Sokoban.STEP_PUSHING.indexOf(step) > -1) {
+            mLastStep = STEP_PUSHING;
+        }
     }
 }

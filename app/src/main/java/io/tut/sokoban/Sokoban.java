@@ -17,8 +17,15 @@ abstract class Sokoban {
     static final char MOVE_UP = 'u';
     static final char MOVE_RIGHT = 'r';
     static final char MOVE_DOWN = 'd';
+
     static final char PUSH_LEFT = 'L';
     static final char PUSH_UP = 'U';
     static final char PUSH_RIGHT = 'R';
     static final char PUSH_DOWN = 'D';
+
+    static final String STEP_MOVING = "lurd";
+    static final String STEP_PUSHING = "LURD";
+
+    // 覆棋用
+    static final char REDO_STEP = '.';
 }

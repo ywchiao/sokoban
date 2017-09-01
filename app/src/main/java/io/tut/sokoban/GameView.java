@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,19 +17,37 @@ class GameView extends View {
     private int mPaddingTop;
     private int mPaddingLeft;
 
+    private float mButtonGap;
+    private float mButtonWidth;
+
     private int mManFacing = GameBitmaps.FACE_RIGHT;
+
+    private String mElapsedTime;
 
     private GameActivity mGameActivity;
     private GameBitmaps tileSheet = null;
 
     private SoundEffect mSoundEffect;
 
+    private TuTButton[] mButtons;
+
     public GameView(Context context) {
         super(context);
+
+        mElapsedTime = getResources().getString(R.string.str_elapsed_time, 0, 0, 0, 0);
 
         mGameActivity = (GameActivity) context;
 
         mSoundEffect = mGameActivity.getSoundEffect();
+
+        mButtons = new TuTButton[] {
+            new TuTButton(getResources().getString(R.string.str_btn_undo), false),
+            new TuTButton(getResources().getString(R.string.str_btn_start), true),
+            new TuTButton(getResources().getString(R.string.str_btn_redo), false)
+        };
+
+        TuTButton.setTextColor(ContextCompat.getColor(context, R.color.colorMidnightBlue));
+        TuTButton.setBackgroundColor(ContextCompat.getColor(context, R.color.colorMintCream));
 
         tileSheet = BitmapManager.getSokobanSkin(getResources());
     }
@@ -40,11 +59,16 @@ class GameView extends View {
         Paint background = new Paint();
 
         // 背景色
-        background.setColor(getResources().getColor(R.color.background));
+        background.setColor(ContextCompat.getColor(mGameActivity, R.color.colorBackground));
         canvas.drawRect(0, 0, getWidth(), getHeight(), background);
 
         // 繪製遊戲局面
         drawGameBoard(canvas);
+
+        // 繪製遊戲時間
+        drawGameElapsedTime(canvas);
+
+        drawGameButton(canvas);
     }
 
     @Override
@@ -56,13 +80,21 @@ class GameView extends View {
 
             mPaddingTop = (int) Math.floor(((h / mCellWidth) - mGameActivity.getCurrentState().NUM_ROW) / 2);
             mPaddingLeft = 0;
+
+            mButtonWidth = w / 4;
+            mButtonGap = mButtonWidth / 6;
         }
         else {
             mCellWidth = h / mGameActivity.getCurrentState().NUM_ROW;
 
             mPaddingTop = 0;
             mPaddingLeft = (int) Math.floor(((w / mCellWidth) - mGameActivity.getCurrentState().NUM_COLUMN) / 2);
+
+            mButtonWidth = h / 5;
+            mButtonGap = mButtonWidth / 3;
         }
+
+        setButtonSize();
     }
 
     @Override
@@ -71,29 +103,22 @@ class GameView extends View {
             return true;
         }
 
-        GameState gameState = mGameActivity.getCurrentState();
-
-        int manRow = gameState.getManRow();
-        int manColumn = gameState.getManColumn();
-
         int touch_x = (int)event.getX(); // 觸摸點的 x 坐標
         int touch_y = (int)event.getY(); // 觸摸點的 y 坐標
 
-        if (touch_above_to_man(touch_x, touch_y, manRow, manColumn)) {
-            handleUp();
+        GameState gameState = mGameActivity.getCurrentState();
+
+        if (gameState.getState() == GameState.GAMING) {
+            handleBoardPane(gameState, touch_x, touch_y);
         }
 
-        if (touch_below_to_man(touch_x, touch_y, manRow, manColumn)) {
-            handleDown();
-        }
+        handleButtonPane(gameState, touch_x, touch_y);
 
-        if (touch_left_to_man(touch_x, touch_y, manRow, manColumn)) {
-            handleLeft();
-        }
+        refreshButtonPane(gameState);
 
-        if (touch_right_to_man(touch_x, touch_y, manRow, manColumn)) {
-            handleRight();
-        }
+        playSoundEffect(gameState);
+
+        gameState.updateState();
 
         postInvalidate();
 
@@ -173,6 +198,26 @@ class GameView extends View {
         }
     }
 
+    private void drawGameButton(Canvas canvas) {
+        for (TuTButton button : mButtons) {
+            button.draw(canvas);
+        }
+    }
+
+    private void drawGameElapsedTime(Canvas canvas) {
+        String elapsedTime = mGameActivity.getCurrentState().getElapsedTime();
+
+        Paint textPen = new Paint();
+        float scale = getResources().getDisplayMetrics().density;
+
+        // 背景色
+        textPen.setColor(ContextCompat.getColor(mGameActivity, R.color.colorElapsedTime));
+        textPen.setStyle(Paint.Style.FILL);
+        textPen.setTextSize((int) (20 * scale));
+
+        canvas.drawText(elapsedTime, 0, 50, textPen);
+    }
+
     private Rect getRect(int row, int column) {
         int left = (int)((mPaddingLeft + column) * mCellWidth);
         int top = (int)((mPaddingTop + row) * mCellWidth);
@@ -182,72 +227,148 @@ class GameView extends View {
         return new Rect(left, top, right, bottom);
     }
 
-    private void handleDown() {
-        GameState gameState = mGameActivity.getCurrentState();
+    private void handleBoardPane(GameState gameState, int touch_x, int touch_y) {
+        int manRow = gameState.getManRow();
+        int manColumn = gameState.getManColumn();
 
+        if (touch_above_to_man(touch_x, touch_y, manRow, manColumn)) {
+            handleUp(gameState);
+        }
+
+        if (touch_below_to_man(touch_x, touch_y, manRow, manColumn)) {
+            handleDown(gameState);
+        }
+
+        if (touch_left_to_man(touch_x, touch_y, manRow, manColumn)) {
+            handleLeft(gameState);
+        }
+
+        if (touch_right_to_man(touch_x, touch_y, manRow, manColumn)) {
+            handleRight(gameState);
+        }
+
+        if ((manRow != gameState.getManRow()) || (manColumn != gameState.getManColumn())) {
+            gameState.resetUndoHistory();
+        }
+    }
+
+    private void handleButtonPane(GameState gameState, int touch_x, int touch_y) {
+        for (TuTButton button : mButtons) {
+            if (button.isActivated() && button.pressed(touch_x, touch_y)) {
+                if (getResources().getString(R.string.str_btn_quit).equals(button.getLabel())) {
+                    gameState.setState(GameState.STUCK);
+
+                    break;
+                }
+
+                if (getResources().getString(R.string.str_btn_redo).equals(button.getLabel())) {
+                    gameState.redoStep(Sokoban.REDO_STEP);
+
+                    break;
+                }
+
+                if (getResources().getString(R.string.str_btn_start).equals(button.getLabel())) {
+                    button.setLabel(getResources().getString(R.string.str_btn_quit));
+
+                    gameState.setState(GameState.STARTED);
+
+                    break;
+                }
+
+                if (getResources().getString(R.string.str_btn_undo).equals(button.getLabel())) {
+                    gameState.undoStep();
+
+                    break;
+                }
+            }
+        }
+    }
+
+    private void handleDown(GameState gameState) {
         if (gameState.isBoxBelowToMan()) {
             gameState.redoStep(Sokoban.PUSH_DOWN);
-
-            mSoundEffect.playPushingEffect();
         }
         else {
             gameState.redoStep(Sokoban.MOVE_DOWN);
-
-            mSoundEffect.playWalkingEffect();
         }
 
         mManFacing = GameBitmaps.FACE_DOWN;
     }
 
-    private void handleLeft() {
-        GameState gameState = mGameActivity.getCurrentState();
-
+    private void handleLeft(GameState gameState) {
         if (gameState.isBoxLeftToMan()) {
             gameState.redoStep(Sokoban.PUSH_LEFT);
-
-            mSoundEffect.playPushingEffect();
         }
         else {
             gameState.redoStep(Sokoban.MOVE_LEFT);
-
-            mSoundEffect.playWalkingEffect();
         }
 
         mManFacing = GameBitmaps.FACE_LEFT;
     }
 
-    private void handleRight() {
-        GameState gameState = mGameActivity.getCurrentState();
-
+    private void handleRight(GameState gameState) {
         if (gameState.isBoxRightToMan()) {
             gameState.redoStep(Sokoban.PUSH_RIGHT);
-
-            mSoundEffect.playPushingEffect();
         }
         else {
             gameState.redoStep(Sokoban.MOVE_RIGHT);
-
-            mSoundEffect.playWalkingEffect();
         }
 
         mManFacing = GameBitmaps.FACE_RIGHT;
     }
 
-    private void handleUp() {
-        GameState gameState = mGameActivity.getCurrentState();
-
+    private void handleUp(GameState gameState) {
         if (gameState.isBoxAboveToMan()) {
             gameState.redoStep(Sokoban.PUSH_UP);
-
-            mSoundEffect.playPushingEffect();
         }
         else {
             gameState.redoStep(Sokoban.MOVE_UP);
-
-            mSoundEffect.playWalkingEffect();
         }
 
         mManFacing = GameBitmaps.FACE_UP;
+    }
+
+    private void playSoundEffect(GameState gameState) {
+        if (gameState.getLastStep() == GameState.STEP_PUSHING) {
+            mSoundEffect.playPushingEffect();
+        }
+
+        if (gameState.getLastStep() == GameState.STEP_MOVING) {
+            mSoundEffect.playWalkingEffect();
+        }
+    }
+
+    private void refreshButtonPane(GameState gameState) {
+        for (TuTButton button : mButtons) {
+            if (getResources().getString(R.string.str_btn_redo).equals(button.getLabel())) {
+                if (gameState.isRedoable()) {
+                    button.activate();
+                }
+                else {
+                    button.deactivate();
+                }
+            }
+
+            if (getResources().getString(R.string.str_btn_undo).equals(button.getLabel())) {
+                if (gameState.isUndoable()) {
+                    button.activate();
+                }
+                else {
+                    button.deactivate();
+                }
+            }
+        }
+    }
+
+    private void setButtonSize() {
+        for (int i = 0; i < mButtons.length; i ++) {
+            mButtons[i].setBounds(
+                (int) (mButtonGap * 2 + i * (mButtonWidth + mButtonGap)),
+                (int) (mCellWidth * (mPaddingTop + mGameActivity.getCurrentState().NUM_ROW + 1)),
+                (int) (mButtonGap * 2 + i * (mButtonWidth + mButtonGap) + mButtonWidth),
+                (int) (mCellWidth * (mPaddingTop + mGameActivity.getCurrentState().NUM_ROW + 2))
+            );
+        }
     }
 
     private boolean touch_above_to_man(int touch_x, int touch_y, int manRow, int manColumn) {

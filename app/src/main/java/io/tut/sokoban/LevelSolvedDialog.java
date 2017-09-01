@@ -9,13 +9,28 @@ import android.os.Bundle;
 public class LevelSolvedDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        String message;
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        String message = getString(R.string.str_level_finished, getArguments().getInt("steps"));
+        if (getArguments().getBoolean("solved")) {
+            message = getString(
+                R.string.str_level_solved,
+                getArguments().getInt("steps"),
+                getArguments().getString("elapsed")
+            );
+        }
+        else {
+            message = getString(
+                R.string.str_level_stuck,
+                getArguments().getInt("steps"),
+                getArguments().getString("elapsed")
+            );
+        }
 
         builder.setMessage(message)
             .setPositiveButton(R.string.str_confirm, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
+                    getActivity().finish();
                 }
             });
 
