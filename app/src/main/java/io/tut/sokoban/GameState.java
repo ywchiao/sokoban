@@ -31,14 +31,14 @@ class GameState {
 
     private final HashSet<Point> mGoalCells;
 
-    private int mStepType;
+    private long mElapsedTime;
+
+    private int mGameStatus;
 
     private int mManRow;
     private int mManColumn;
 
-    private int mGameStatus;
-
-    private long mElapsedTime;
+    private int mStepType;
 
     /**
      * 建構子。
