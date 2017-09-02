@@ -24,7 +24,7 @@ public class GameActivity extends AppCompatActivity {
         @Override
         public void run() {
             mCurrentState.updateElapsedTime(
-                getElapsedTimeString(SystemClock.uptimeMillis() - mStartTime)
+                SystemClock.uptimeMillis() - mStartTime
             );
 
             mView.postInvalidate();
@@ -52,7 +52,7 @@ public class GameActivity extends AppCompatActivity {
         int selected_level = getIntent().getIntExtra(KEY_SELECTED_LEVEL, 1);
 
         mCurrentState = new GameState(GameLevels.getInstance().getLevel(selected_level));
-        mCurrentState.updateElapsedTime(getElapsedTimeString(0));
+        //mCurrentState.updateElapsedTime(0l);
 
         mSoundEffect = new SoundEffect(this);
 
@@ -88,7 +88,7 @@ public class GameActivity extends AppCompatActivity {
 
         mMediaPlayer.start();
 
-        if (mCurrentState.getState() == GameState.GAMING) {
+        if (mCurrentState.getGameStatus() == GameState.GAMING) {
             mTimerHandler.postDelayed(mTimer, 37);
         }
     }
@@ -107,8 +107,8 @@ public class GameActivity extends AppCompatActivity {
         }
 
         // 使用者按下 _開始_ 按鈕，進入計時模式。
-        if (mCurrentState.getState() == GameState.STARTED) {
-            mCurrentState.setState(GameState.GAMING);
+        if (mCurrentState.getGameStatus() == GameState.STARTED) {
+            mCurrentState.setGameStatus(GameState.GAMING);
 
             mStartTime = SystemClock.uptimeMillis();
 
@@ -116,7 +116,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         // 檢查遊戲是否 _通關_ 或者 _放棄_ 顯示相應的 _對話框_ (dialog)。
-        if ((mCurrentState.getState() == GameState.SOLVED) || (mCurrentState.getState() == GameState.STUCK)) {
+        if ((mCurrentState.getGameStatus() == GameState.SOLVED) || (mCurrentState.getGameStatus() == GameState.STUCK)) {
             mTimerHandler.removeCallbacks(mTimer);
 
             DialogFragment dialog = new LevelClosingDialog();
@@ -124,11 +124,11 @@ public class GameActivity extends AppCompatActivity {
             // 取得 _通關步驟_ 長度，與 _通關時間_ 傳遞給 Dialog
             Bundle args = new Bundle();
 
-            args.putBoolean("solved", mCurrentState.getState() == GameState.SOLVED);
+            args.putBoolean("solved", mCurrentState.getGameStatus() == GameState.SOLVED);
 
             args.putInt("steps", mCurrentState.getSolvingSteps().length());
 
-            args.putString("elapsed", mCurrentState.getElapsedTime());
+            args.putString("elapsed", ((GameView) mView).getElapsedTime());
 
             dialog.setArguments(args);
 
@@ -154,25 +154,6 @@ public class GameActivity extends AppCompatActivity {
      */
     public SoundEffect getSoundEffect() {
         return mSoundEffect;
-    }
-
-    /**
-     * 傳回使用者在當前關卡已使用的時間，以 "遊戲已進行： 00：00:00:000" 格式呈現。
-     *
-     * @param elapsed 遊戲進行時間，單位是 millis。
-     *                <p>
-     *                return String 已使用的時間字串。
-     */
-    private String getElapsedTimeString(long elapsed) {
-        int millis = (int) (elapsed % 1000);
-        int seconds = (int) (elapsed / 1000);
-        int minutes = seconds / 60;
-        int hours = minutes / 60;
-
-        minutes = minutes % 60;
-        seconds = seconds % 60;
-
-        return getResources().getString(R.string.str_elapsed_time, hours, minutes, seconds, millis);
     }
 }
 

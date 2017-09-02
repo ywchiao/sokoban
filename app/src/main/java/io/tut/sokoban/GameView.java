@@ -116,7 +116,7 @@ class GameView extends View {
 
         GameState gameState = mGameActivity.getCurrentState();
 
-        if (gameState.getState() == GameState.GAMING) {
+        if (gameState.getGameStatus() == GameState.GAMING) {
             handleBoardPane(gameState, touch_x, touch_y);
         }
 
@@ -217,11 +217,28 @@ class GameView extends View {
         mPaint.setColor(ContextCompat.getColor(mGameActivity, R.color.colorMintCream));
 
         canvas.drawText(
-            mGameActivity.getCurrentState().getElapsedTime(),
+            getElapsedTime(),
             mTimerBounds.left,
             mTimerBounds.top + (mTimerBounds.height() - (mPaint.ascent() + mPaint.descent())) / 2,
             mPaint
         );
+    }
+
+    /**
+     * 傳回使用者在當前關卡已使用的時間字串，以 "00:00:00:000" 格式呈現。
+     */
+    public String getElapsedTime() {
+        long elapsedTime = mGameActivity.getCurrentState().getElapsedTime();
+
+        int millis = (int) (elapsedTime % 1000);
+        int seconds = (int) (elapsedTime / 1000);
+        int minutes = seconds / 60;
+        int hours = minutes / 60;
+
+        minutes = minutes % 60;
+        seconds = seconds % 60;
+
+        return getResources().getString(R.string.str_formated_time, hours, minutes, seconds, millis);
     }
 
     private Rect getRect(int row, int column) {
@@ -262,7 +279,7 @@ class GameView extends View {
         for (TuTButton button : mButtons) {
             if (button.isActivated() && button.isPressed(touch_x, touch_y)) {
                 if (getResources().getString(R.string.str_btn_quit).equals(button.getLabel())) {
-                    gameState.setState(GameState.STUCK);
+                    gameState.setGameStatus(GameState.STUCK);
 
                     break;
                 }
@@ -276,7 +293,7 @@ class GameView extends View {
                 if (getResources().getString(R.string.str_btn_start).equals(button.getLabel())) {
                     button.setLabel(getResources().getString(R.string.str_btn_quit));
 
-                    gameState.setState(GameState.STARTED);
+                    gameState.setGameStatus(GameState.STARTED);
 
                     break;
                 }
@@ -335,11 +352,11 @@ class GameView extends View {
     }
 
     private void playSoundEffect(GameState gameState) {
-        if (gameState.getLastStep() == GameState.STEP_PUSHING) {
+        if (gameState.getStepType() == GameState.STEP_PUSHING) {
             mSoundEffect.playPushingEffect();
         }
 
-        if (gameState.getLastStep() == GameState.STEP_MOVING) {
+        if (gameState.getStepType() == GameState.STEP_MOVING) {
             mSoundEffect.playWalkingEffect();
         }
     }
@@ -367,7 +384,7 @@ class GameView extends View {
     }
 
     private void setTimerBounds(int width) {
-        String elapsedTime = mGameActivity.getCurrentState().getElapsedTime();
+        String elapsedTime = getElapsedTime();
 
         mPaint.setTextSize(48f);
         mPaint.getTextBounds(elapsedTime, 0, elapsedTime.length(), mTimerBounds);

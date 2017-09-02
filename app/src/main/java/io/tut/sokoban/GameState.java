@@ -5,6 +5,9 @@ import android.util.Log;
 
 import java.util.HashSet;
 
+/**
+ * GameState 實際紀錄遊戲盤面的變化。
+ */
 class GameState {
     private static final String TAG = "SOKOBAN";
 
@@ -28,15 +31,20 @@ class GameState {
 
     private final HashSet<Point> mGoalCells;
 
-    private int mLastStep;
+    private int mStepType;
 
     private int mManRow;
     private int mManColumn;
 
-    private int mState;
+    private int mGameStatus;
 
-    private String mElapsedTime;
+    private long mElapsedTime;
 
+    /**
+     * 建構子。
+     *
+     * @param initialState 記錄遊戲 _初始盤面_ 的字串陣列。
+     */
     GameState(String[] initialState) {
         mGoalCells = new HashSet<>();
 
@@ -53,36 +61,60 @@ class GameState {
 
             // 搜尋 _搬運工_ 和 _目標點_ 在關卡內的初始位置
             for (int c = 0; c < NUM_COLUMN; c++) {
-                if (isGoal(r, c)) {
-                    mGoalCells.add(new Point(r, c));
+                if (isGoal(c, r)) {
+                    mGoalCells.add(new Point(c, r));
                 }
 
-                if (isMan(r, c)) {
-                    mManRow = r;
+                if (isMan(c, r)) {
                     mManColumn = c;
+                    mManRow = r;
                 }
             }
         }
     }
 
+    /**
+     * 取得目前的遊戲 _進行時間_。遊戲進行時間的估算由 GameActivity 負責，顯示
+     * 由 GameView 負責，這裡只負責 _保留_ (記錄)。
+     *
+     * @return long _已進行_ 的 _遊戲時間_。
+     */
+    long getElapsedTime() {
+        return mElapsedTime;
+    }
+
+    /**
+     * 取得 _目前_ 的 _遊戲狀態_。
+     *
+     * @return int 遊戲狀態。
+     */
+    int getGameStatus() {
+        return mGameStatus;
+    }
+
+    /**
+     * 傳回 _目前_ 的 _遊戲盤面_ 狀態。
+     *
+     * @return StringBuffer[] _遊戲盤面_。
+     */
     StringBuffer[] getLabelInCells() {
         return mLabelInCells;
     }
 
-    int getState() {
-        return mState;
-    }
-
-    String getElapsedTime() {
-        return mElapsedTime;
-    }
-
+    /**
+     * 接收遊戲進行的 _指令_ (人物移動，推箱移動，重覆之前動作等），分派執行，並在執行
+     * 成功後 ( _done_ == true) 記錄。
+     *
+     * @param step 要進行的動作。
+     *
+     * @return boolean: true 指令成功執行並紀錄； false otherwise。
+     */
     boolean redoStep(char step) {
         boolean done;
 
         switch (step) {
             case Sokoban.REDO_STEP:
-                done = prevStep();
+                done = redoUndoneStep();
 
                 break;
 
@@ -127,7 +159,7 @@ class GameState {
                 break;
 
             default:
-                // 不應該到這兒，記露一下
+                // 不應該到這兒，記錄一下
                 Log.d(TAG, "redoStep: " + step);
 
                 done = false;
@@ -136,7 +168,7 @@ class GameState {
         }
 
         if (done) {
-            setLastStep(step);
+            setStepType(step);
 
             mSolvingSteps.append(step);
         }
@@ -144,14 +176,26 @@ class GameState {
         return done;
     }
 
+    /**
+     * _清空_ 目前的 _悔棋_ 記錄。
+     */
     void resetUndoHistory() {
         mUndoHistory.setLength(0);
     }
 
-    void setState(int state) {
-        mState = state;
+    /**
+     * 設定目前的 _遊戲狀態_。
+     *
+     * @param gameStatus 遊戲狀態
+     */
+    void setGameStatus(int gameStatus) {
+        mGameStatus = gameStatus;
     }
 
+    /**
+     * 取消 (undo) 遊戲進行的上一步驟；同時將它取消的步驟保留下來，如果萬一又反悔想要
+     * redo。
+     */
     void undoStep() {
         char step = mSolvingSteps.charAt(mSolvingSteps.length() - 1);
 
@@ -178,25 +222,25 @@ class GameState {
 
             case Sokoban.PUSH_DOWN:
                 moveManRight();
-                moveBoxUp(mManRow + 2, mManColumn);
+                moveBoxUp(mManColumn, mManRow + 2);
 
                 break;
 
             case Sokoban.PUSH_LEFT:
                 moveManRight();
-                moveBoxRight(mManRow, mManColumn - 2);
+                moveBoxRight(mManColumn - 2, mManRow);
 
                 break;
 
             case Sokoban.PUSH_RIGHT:
                 moveManLeft();
-                moveBoxLeft(mManRow, mManColumn + 2);
+                moveBoxLeft(mManColumn + 2, mManRow);
 
                 break;
 
             case Sokoban.PUSH_UP:
                 moveManDown();
-                moveBoxDown(mManRow - 2, mManColumn);
+                moveBoxDown(mManColumn, mManRow - 2);
 
                 break;
 
@@ -207,96 +251,197 @@ class GameState {
                 break;
         }
 
-        setLastStep(step);
+        setStepType(step);
 
         mUndoHistory.append(step);
 
         mSolvingSteps.deleteCharAt(mSolvingSteps.length() - 1);
     }
 
-    void updateElapsedTime(String elapsedTime) {
+    /**
+     * 更新 _已進行_ 的 _遊戲時間_ 為 elapsedTime。遊戲進行時間的估算由 GameActivity 負責，顯示
+     * 由 GameView 負責，這裡只負責 _保留_ (記錄)。
+     *
+     * @param elapsedTime GameActivity 估算後傳入的遊戲進行時間。
+     */
+    void updateElapsedTime(long elapsedTime) {
         mElapsedTime = elapsedTime;
     }
 
+    /**
+     * 檢查遊戲謎題是否已被解開。
+     */
     void updateState() {
         if (isPuzzleSolved()) {
-            mState = SOLVED;
-        }
-        else if (mState == SOLVED) {
-            mState = GAMING;
+            mGameStatus = SOLVED;
         }
     }
 
-    int getLastStep() {
-        return mLastStep;
-    }
-
+    /**
+     * 傳回工人目前所在位置的 column (x) 座標。
+     *
+     * @return int 工人目前所在的 column (x) 座標。
+     */
     int getManColumn() {
         return mManColumn;
     }
 
+    /**
+     * 傳回工人目前所在位置的 row (y) 座標。
+     *
+     * @return int 工人目前所在位置的 row (y) 座標。
+     */
     int getManRow() {
         return mManRow;
     }
 
+    /**
+     * 傳回解謎步驟的字串 。
+     *
+     * @return String 由解謎步驟組成的字串。
+     */
     String getSolvingSteps() {
         return mSolvingSteps.toString();
     }
 
+    /**
+     * 傳回 _最近_ 執行的棋步 _類型_。
+     *
+     * @return int 棋步類型。
+     */
+    int getStepType() {
+        return mStepType;
+    }
+
+    /**
+     * 傳回箱子是否在工人正 _上_ 方一格。
+     *
+     * @return true: 箱子在工人正 _上_ 方一格； false: otherwise。
+     */
     boolean isBoxAboveToMan() {
-        return (mManRow > 0) && isBox(mManRow - 1, mManColumn);
+        return (mManRow > 0) && isBox(mManColumn, mManRow - 1);
     }
 
+    /**
+     * 傳回箱子是否在箱子正 _下_ 方一格。
+     *
+     * @return true: 工人在箱子正 _下_ 方一格； false: otherwise。
+     */
     boolean isBoxBelowToMan() {
-        return ((mManRow + 1) < NUM_ROW) && isBox(mManRow + 1, mManColumn);
+        return ((mManRow + 1) < NUM_ROW) && isBox(mManColumn, mManRow + 1);
     }
 
+    /**
+     * 傳回箱子是否在工人正 _左_ 方一格。
+     *
+     * @return true: 箱子在工人正 _左_ 方一格； false: otherwise。
+     */
     boolean isBoxLeftToMan() {
-        return (mManColumn > 0) && isBox(mManRow, mManColumn - 1);
+        return (mManColumn > 0) && isBox(mManColumn - 1, mManRow);
     }
 
+    /**
+     * 傳回工人是否在工人正 _右_ 方一格。
+     *
+     * @return true: 箱子在工人正 _右_ 方一格； false: otherwise。
+     */
     boolean isBoxRightToMan() {
-        return ((mManColumn + 1) < NUM_COLUMN) && isBox(mManRow, mManColumn + 1);
+        return ((mManColumn + 1) < NUM_COLUMN) && isBox(mManColumn + 1, mManRow);
     }
 
+    /**
+     * 之前是否有 _悔棋_ 可以再後悔， _重覆_ (redo) 悔棋的棋步。
+     *
+     * @return true: 有棋步可以 redo; false: otherwise。
+     */
     boolean isRedoable() {
         return (mUndoHistory.length() > 0);
     }
 
+    /**
+     * 之前是否有棋步可以 _悔棋_。
+     *
+     * @return true: 有棋步可以 undo; false: otherwise。
+     */
     boolean isUndoable() {
         return (mSolvingSteps.length() > 0);
     }
 
-    private boolean isBox(int row, int column) {
+    /**
+     * 指定的棋盤位置，是否由 _箱子_ 佔據。
+     *
+     * @param column 行
+     * @param row    列
+     *
+     * @return true: 指定的位置有箱子； false: otherwise。
+     */
+    private boolean isBox(int column, int row) {
         char label = mLabelInCells[row].charAt(column);
 
         return (label == Sokoban.BOX) || (label == Sokoban.BOX_ON_GOAL);
     }
 
-    private boolean isFloor(int row, int column) {
+    /**
+     * 指定的棋盤位置，是否 _可以_ 被佔據。
+     *
+     * @param column 行
+     * @param row    列
+     *
+     * @return true: 指定的位置 _可以_ 被佔據； false: otherwise。
+     */
+    private boolean isFloor(int column, int row) {
         char label = mLabelInCells[row].charAt(column);
 
         return (label == Sokoban.FLOOR) || (label == Sokoban.GOAL);
     }
 
-    private boolean isGoal(int row, int column) {
+    /**
+     * 指定的棋盤位置，是否為 _目標_ (goal) 位置。
+     *
+     * @param column 行
+     * @param row    列
+     *
+     * @return trur: 指定的位置是 _目標_ 位置； false: otherwise。
+     */
+    private boolean isGoal(int column, int row) {
         char label = mLabelInCells[row].charAt(column);
 
         return (label == Sokoban.GOAL) || (label == Sokoban.BOX_ON_GOAL) || (label == Sokoban.MAN_ON_GOAL);
     }
 
-    private boolean isGoalUnachived(int row, int column) {
+    /**
+     * 指定的棋盤位置，是否為 _未完成_ 的目標位置。
+     *
+     * @param column 行
+     * @param row    列
+     *
+     * @return true: 指定的位置是 _未完成_ 的目標位置； false: otherwise。
+     */
+    private boolean isGoalUnachived(int column, int row) {
         char label = mLabelInCells[row].charAt(column);
 
         return (label == Sokoban.GOAL) || (label == Sokoban.MAN_ON_GOAL);
     }
 
-    private boolean isMan(int row, int column) {
+    /**
+     * 指定的棋盤位置，是否為 _工人_ 所在位置。
+     *
+     * @param column 行
+     * @param row    列
+     *
+     * @return true: 指定的位置是 _工人_ 所在位置； false: otherwise。
+     */
+    private boolean isMan(int column, int row) {
         char label = mLabelInCells[row].charAt(column);
 
         return (label == Sokoban.MAN) || (label == Sokoban.MAN_ON_GOAL);
     }
 
+    /**
+     * 是否 _所有_ 的 _箱子_ 都已經移到 _目標_ 格子。
+     *
+     * @return true: _所有_ 箱子都在目標格子； false: otherwise。
+     */
     private boolean isPuzzleSolved() {
         boolean solved = true;
 
@@ -311,27 +456,57 @@ class GameState {
         return solved;
     }
 
-    private void moveBoxDown(int row, int column) {
-        moveBoxOut(row, column);
-        moveBoxIn(row + 1, column);
+    /**
+     * 將指定 _位置_ 的箱子往 _下_ 移一格。
+     *
+     * @param column 行
+     * @param row    列
+     */
+    private void moveBoxDown(int column, int row) {
+        moveBoxOut(column, row);
+        moveBoxIn(column, row + 1);
     }
 
-    private void moveBoxLeft(int row, int column) {
-        moveBoxOut(row, column);
-        moveBoxIn(row, column - 1);
+    /**
+     * 將指定 _位置_ 的箱子往 _左_ 移一格。
+     *
+     * @param column 行
+     * @param row    列
+     */
+    private void moveBoxLeft(int column, int row) {
+        moveBoxOut(column, row);
+        moveBoxIn(column - 1, row);
     }
 
-    private void moveBoxRight(int row, int column) {
-        moveBoxOut(row, column);
-        moveBoxIn(row, column + 1);
+    /**
+     * 將指定 _位置_ 的箱子往 _右_ 移一格。
+     *
+     * @param column 行
+     * @param row    列
+     */
+    private void moveBoxRight(int column, int row) {
+        moveBoxOut(column, row);
+        moveBoxIn(column + 1, row);
     }
 
-    private void moveBoxUp(int row, int column) {
-        moveBoxOut(row, column);
-        moveBoxIn(row - 1, column);
+    /**
+     * 將指定 _位置_ 的箱子往 _上_ 移一格。
+     *
+     * @param column 行
+     * @param row    列
+     */
+    private void moveBoxUp(int column, int row) {
+        moveBoxOut(column, row);
+        moveBoxIn(column, row - 1);
     }
 
-    private void moveBoxIn(int row, int column) {
+    /**
+     * 將箱子 _移入_ 指定 _位置_。
+     *
+     * @param column 行
+     * @param row    列
+     */
+    private void moveBoxIn(int column, int row) {
         if (mLabelInCells[row].charAt(column) == Sokoban.GOAL) {
             mLabelInCells[row].setCharAt(column, Sokoban.BOX_ON_GOAL);
         }
@@ -340,7 +515,13 @@ class GameState {
         }
     }
 
-    private void moveBoxOut(int row, int column) {
+    /**
+     * 將箱子 _移出_ 指定 _位置_。
+     *
+     * @param column 行
+     * @param row    列
+     */
+    private void moveBoxOut(int column, int row) {
         if (mLabelInCells[row].charAt(column) == Sokoban.BOX_ON_GOAL) {
             mLabelInCells[row].setCharAt(column, Sokoban.GOAL);
         }
@@ -349,15 +530,20 @@ class GameState {
         }
     }
 
+    /**
+     * 將 _工人_ 往 _下移_ 一格。
+     *
+     * @return true: 移動成功； false: otherwise。
+     */
     private boolean moveManDown() {
         boolean done = false;
 
         int belowRow = mManRow + 1;
 
-        if ((belowRow < NUM_ROW) && isFloor(belowRow, mManColumn)) {
-            moveManOut();
+        if ((belowRow < NUM_ROW) && isFloor(mManColumn, belowRow)) {
+            moveManOut(mManColumn, mManRow);
             mManRow = belowRow;
-            moveManIn();
+            moveManIn(mManColumn, mManRow);
 
             done = true;
         }
@@ -365,15 +551,20 @@ class GameState {
         return done;
     }
 
+    /**
+     * 將 _工人_ 往 _左移_ 一格。
+     *
+     * @return true: 移動成功； false: otherwise。
+     */
     private boolean moveManLeft() {
         boolean done = false;
 
         int leftColumn = mManColumn - 1;
 
-        if ((leftColumn >= 0) && isFloor(mManRow, leftColumn)) {
-            moveManOut();
+        if ((leftColumn >= 0) && isFloor(leftColumn, mManRow)) {
+            moveManOut(mManColumn, mManRow);
             mManColumn = leftColumn;
-            moveManIn();
+            moveManIn(mManColumn, mManRow);
 
             done = true;
         }
@@ -381,15 +572,20 @@ class GameState {
         return done;
     }
 
+    /**
+     * 將 _工人_ 往 _右移_ 一格。
+     *
+     * @return true: 移動成功； false: otherwise。
+     */
     private boolean moveManRight() {
         boolean done = false;
 
         int rightColumn = mManColumn + 1;
 
-        if ((rightColumn < NUM_COLUMN) && isFloor(mManRow, rightColumn)) {
-            moveManOut();
+        if ((rightColumn < NUM_COLUMN) && isFloor(rightColumn, mManRow)) {
+            moveManOut(mManColumn, mManRow);
             mManColumn = rightColumn;
-            moveManIn();
+            moveManIn(mManColumn, mManRow);
 
             done = true;
         }
@@ -397,15 +593,20 @@ class GameState {
         return done;
     }
 
+    /**
+     * 將 _工人_ 往 _上移_ 一格。
+     *
+     * @return true: 移動成功； false: otherwise。
+     */
     private boolean moveManUp() {
         boolean done = false;
 
         int aboveRow = mManRow - 1;
 
-        if ((aboveRow >= 0) && isFloor(aboveRow, mManColumn)) {
-            moveManOut();
+        if ((aboveRow >= 0) && isFloor(mManColumn, aboveRow)) {
+            moveManOut(mManColumn, mManRow);
             mManRow = aboveRow;
-            moveManIn();
+            moveManIn(mManColumn, mManRow);
 
             done = true;
         }
@@ -413,25 +614,122 @@ class GameState {
         return done;
     }
 
-    private void moveManIn() {
-        if (mLabelInCells[mManRow].charAt(mManColumn) == Sokoban.GOAL) {
-            mLabelInCells[mManRow].setCharAt(mManColumn, Sokoban.MAN_ON_GOAL);
+    /**
+     * 將工人 _移入_ 指定 _位置_。
+     *
+     * @param column 行
+     * @param row    列
+     */
+    private void moveManIn(int column, int row) {
+        if (mLabelInCells[row].charAt(column) == Sokoban.GOAL) {
+            mLabelInCells[row].setCharAt(column, Sokoban.MAN_ON_GOAL);
         }
         else {
-            mLabelInCells[mManRow].setCharAt(mManColumn, Sokoban.MAN);
+            mLabelInCells[row].setCharAt(column, Sokoban.MAN);
         }
     }
 
-    private void moveManOut() {
-        if (mLabelInCells[mManRow].charAt(mManColumn) == Sokoban.MAN_ON_GOAL) {
-            mLabelInCells[mManRow].setCharAt(mManColumn, Sokoban.GOAL);
+    /**
+     * 將工人 _移出_ 指定 _位置_。
+     *
+     * @param column 行
+     * @param row    列
+     */
+    private void moveManOut(int column, int row) {
+        if (mLabelInCells[row].charAt(column) == Sokoban.MAN_ON_GOAL) {
+            mLabelInCells[row].setCharAt(column, Sokoban.GOAL);
         }
         else {
-            mLabelInCells[mManRow].setCharAt(mManColumn, Sokoban.FLOOR);
+            mLabelInCells[row].setCharAt(column, Sokoban.FLOOR);
         }
     }
 
-    private boolean prevStep() {
+    /**
+     * 將 _箱子_ 往 _下推_ (工人 + 箱子) 一格。
+     *
+     * @return true: 移動成功； false: otherwise。
+     */
+    private boolean pushBoxDown() {
+        boolean done = false;
+
+        int belowBoxRow = mManRow + 2;
+
+        if ((belowBoxRow < NUM_ROW) && isFloor(mManColumn, belowBoxRow)) {
+            moveBoxDown(mManColumn, mManRow + 1);
+            moveManDown();
+
+            done = true;
+        }
+
+        return done;
+    }
+
+    /**
+     * 將 _箱子_ 往 _左推_ (工人 + 箱子) 一格。
+     *
+     * @return true: 移動成功； false: otherwise。
+     */
+    private boolean pushBoxLeft() {
+        boolean done = false;
+
+        int leftBoxColumn = mManColumn - 2;
+
+        if ((leftBoxColumn >= 0) && isFloor(leftBoxColumn, mManRow)) {
+            moveBoxLeft(mManColumn - 1, mManRow);
+            moveManLeft();
+
+            done = true;
+        }
+
+        return done;
+    }
+
+    /**
+     * 將 _箱子_ 往 _右推_ (工人 + 箱子) 一格。
+     *
+     * @return true: 移動成功； false: otherwise。
+     */
+    private boolean pushBoxRight() {
+        boolean done = false;
+
+        int rightBoxColumn = mManColumn + 2;
+
+        if ((rightBoxColumn < NUM_COLUMN) && isFloor(rightBoxColumn, mManRow)) {
+            moveBoxRight(mManColumn + 1, mManRow);
+            moveManRight();
+
+            done = true;
+        }
+
+        return done;
+    }
+
+    /**
+     * 將 _箱子_ 往 _上推_ (工人 + 箱子) 一格。
+     *
+     * @return true: 移動成功； false: otherwise。
+     */
+    private boolean pushBoxUp() {
+        boolean done = false;
+
+        int aboveBoxRow = mManRow - 2;
+
+        if ((aboveBoxRow >= 0) && isFloor(mManColumn, aboveBoxRow)) {
+            moveBoxUp(mManColumn, mManRow - 1);
+            moveManUp();
+
+            done = true;
+        }
+
+        return done;
+    }
+
+    /**
+     * _重覆_ (redo) 之前 _悔棋_ (undo) 的棋步。
+     *
+     * @return false: 固定傳回 false; 以 _避免_ redo 指令 _進入_ 解題步驟內。
+     */
+    private boolean redoUndoneStep() {
         char step = mUndoHistory.charAt(mUndoHistory.length() - 1);
 
         mUndoHistory.deleteCharAt(mUndoHistory.length() - 1);
@@ -441,73 +739,19 @@ class GameState {
         return false;
     }
 
-    private boolean pushBoxDown() {
-        boolean done = false;
-
-        int belowBoxRow = mManRow + 2;
-
-        if ((belowBoxRow < NUM_ROW) && isFloor(belowBoxRow, mManColumn)) {
-            moveBoxDown(mManRow + 1, mManColumn);
-            moveManDown();
-
-            done = true;
-        }
-
-        return done;
-    }
-
-    private boolean pushBoxLeft() {
-        boolean done = false;
-
-        int leftBoxColumn = mManColumn - 2;
-
-        if ((leftBoxColumn >= 0) && isFloor(mManRow, leftBoxColumn)) {
-            moveBoxLeft(mManRow, mManColumn - 1);
-            moveManLeft();
-
-            done = true;
-        }
-
-        return done;
-    }
-
-    private boolean pushBoxRight() {
-        boolean done = false;
-
-        int rightBoxColumn = mManColumn + 2;
-
-        if ((rightBoxColumn < NUM_COLUMN) && isFloor(mManRow, rightBoxColumn)) {
-            moveBoxRight(mManRow, mManColumn + 1);
-            moveManRight();
-
-            done = true;
-        }
-
-        return done;
-    }
-
-    private boolean pushBoxUp() {
-        boolean done = false;
-
-        int aboveBoxRow = mManRow - 2;
-
-        if ((aboveBoxRow >= 0) && isFloor(aboveBoxRow, mManColumn)) {
-            moveBoxUp(mManRow - 1, mManColumn);
-            moveManUp();
-
-            done = true;
-        }
-
-        return done;
-    }
-
-    private void setLastStep(char step) {
+    /**
+     * 依據 _最後_ 執行 (redo/undo) 的 _棋步_ 類型 (moving/pushing) 設定棋步
+     * _類型_。
+     *
+     * @param step 棋步字元。
+     */
+    private void setStepType(char step) {
         if (Sokoban.STEP_MOVING.indexOf(step) > -1) {
-            mLastStep = STEP_MOVING;
+            mStepType = STEP_MOVING;
         }
 
         if (Sokoban.STEP_PUSHING.indexOf(step) > -1) {
-            mLastStep = STEP_PUSHING;
+            mStepType = STEP_PUSHING;
         }
     }
 }

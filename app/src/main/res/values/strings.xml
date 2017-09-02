@@ -8,9 +8,12 @@
     <string name="str_game_level">選擇遊戲關卡</string>
     <string name="str_confirm">確 認</string>
     <string name="str_cancel">取 消</string>
-    <string name="str_elapsed_time">使用時間：%1$02d:%2$02d:%3$02d:%4$03d</string>
-    <string name="str_level_solved">恭喜過關!!!\n\n你共使用了：%1$d 步，\n%2$s\n通過這一關。</string>
-    <string name="str_level_stuck">遺憾失敗!!!\n\n你共使用用了：%1$d 步，\n%2$s</string>
+    <string name="str_elapsed_time">使用時間：</string>
+    <string name="str_formated_time">%1$02d:%2$02d:%3$02d:%4$03d</string>
+    <string name="str_level_solved">恭喜過關!!!\n\n%1$s\n%2$s\n</string>
+    <string name="str_level_stuck">遺憾失敗!!!\n\n%1$s\n%2$s\n</string>
+    <string name="str_step_used">"總共移動：%1$d 步"</string>
+    <string name="str_time_used">"全部耗時：%1$s"</string>
     <string name="str_btn_start">開 始</string>
     <string name="str_btn_quit">認 輸</string>
     <string name="str_btn_undo">悔 棋</string>

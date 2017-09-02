@@ -10,20 +10,22 @@ public class LevelClosingDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         String message;
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         if (getArguments().getBoolean("solved")) {
             message = getString(
                 R.string.str_level_solved,
-                getArguments().getInt("steps"),
-                getArguments().getString("elapsed")
+                getString(R.string.str_step_used, getArguments().getInt("steps")),
+                getString(R.string.str_time_used, getArguments().getString("elapsed"))
+
             );
         }
         else {
             message = getString(
                 R.string.str_level_stuck,
-                getArguments().getInt("steps"),
-                getArguments().getString("elapsed")
+                getString(R.string.str_step_used, getArguments().getInt("steps")),
+                getString(R.string.str_time_used, getArguments().getString("elapsed"))
             );
         }
 
