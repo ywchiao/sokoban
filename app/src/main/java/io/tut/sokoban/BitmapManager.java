@@ -12,18 +12,18 @@ class BitmapManager {
             private final int TILE_PER_LINE = 8;
             private final float TILE_WIDTH = GameBitmaps.tileSheet.getWidth() / TILE_PER_LINE;
 
-            private Rect tileBlank = null;
-            private Rect tileBoxOnFloor = null;
-            private Rect tileBoxOnGoal = null;
-            private Rect tileEmpty = null;
-            private Rect tileFloor = null;
-            private Rect tileGoal = null;
-            private Rect tileWall = null;
+            private Rect mTileBlank = null;
+            private Rect mTileBoxOnFloor = null;
+            private Rect mTileBoxOnGoal = null;
+            private Rect mTileEmpty = null;
+            private Rect mTileFloor = null;
+            private Rect mTileGoal = null;
+            private Rect mTileWall = null;
 
-            private Rect tileManFaceDown = null;
-            private Rect tileManFaceLeft = null;
-            private Rect tileManFaceRight = null;
-            private Rect tileManFaceUp = null;
+            private Rect mTileManFaceDown = null;
+            private Rect mTileManFaceLeft = null;
+            private Rect mTileManFaceRight = null;
+            private Rect mTileManFaceUp = null;
 
             private final Rect[] tileManFacing = {
                 getTileManFaceDown(),
@@ -32,151 +32,211 @@ class BitmapManager {
                 getTileManFaceUp()
             };
 
+            /**
+             * 傳回 bitmap 上 Blank 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             public Rect getTileBlank() {
-                if (tileBlank == null) {
+                if (mTileBlank == null) {
                     int left = (int) (TILE_WIDTH * 3);
                     int top = (int) TILE_WIDTH;
                     int right = (int) (TILE_WIDTH * 4) - 1;
                     int bottom = (int) TILE_WIDTH - 1;
 
-                    tileBlank = new Rect(left, top, right, bottom);
+                    mTileBlank = new Rect(left, top, right, bottom);
                 }
 
-                return tileBlank;
+                return mTileBlank;
             }
 
+            /**
+             * 傳回 bitmap 上 BoxOnFloor 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             public Rect getTileBoxOnFloor() {
-                if (tileBoxOnFloor == null) {
+                if (mTileBoxOnFloor == null) {
                     int left = 0;
                     int top = 0;
                     int right = (int) TILE_WIDTH - 1;
                     int bottom = (int) TILE_WIDTH - 1;
 
-                    tileBoxOnFloor = new Rect(left, top, right, bottom);
+                    mTileBoxOnFloor = new Rect(left, top, right, bottom);
                 }
 
-                return tileBoxOnFloor;
+                return mTileBoxOnFloor;
             }
 
+            /**
+             * 傳回 bitmap 上 BoxOnGoal 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             public Rect getTileBoxOnGoal() {
-                if (tileBoxOnGoal == null) {
+                if (mTileBoxOnGoal == null) {
                     int left = (int) TILE_WIDTH;
                     int top = 0;
                     int right = (int) (TILE_WIDTH * 2) - 1;
                     int bottom = (int) TILE_WIDTH - 1;
 
-                    tileBoxOnGoal = new Rect(left, top, right, bottom);
+                    mTileBoxOnGoal = new Rect(left, top, right, bottom);
                 }
 
-                return tileBoxOnGoal;
+                return mTileBoxOnGoal;
             }
 
+            /**
+             * 傳回 bitmap 上 Empty 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             public Rect getTileEmpty() {
-                if (tileEmpty == null) {
+                if (mTileEmpty == null) {
                     int left = (int) (TILE_WIDTH * 2);
                     int top = (int) TILE_WIDTH;
                     int right = (int) (TILE_WIDTH * 3) - 1;
                     int bottom = (int) (TILE_WIDTH * 2) - 1;
 
-                    tileEmpty = new Rect(left, top, right, bottom);
+                    mTileEmpty = new Rect(left, top, right, bottom);
                 }
 
-                return tileEmpty;
+                return mTileEmpty;
             }
 
+            /**
+             * 傳回 bitmap 上 Floor 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             public Rect getTileFloor() {
-                if (tileFloor == null) {
+                if (mTileFloor == null) {
                     int left = 0;
                     int top = (int) TILE_WIDTH;
                     int right = (int) TILE_WIDTH - 1;
                     int bottom = (int) (TILE_WIDTH * 2) - 1;
 
-                    tileFloor = new Rect(left, top, right, bottom);
+                    mTileFloor = new Rect(left, top, right, bottom);
                 }
 
-                return tileFloor;
+                return mTileFloor;
             }
 
+            /**
+             * 傳回 bitmap 上 Goal 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             public Rect getTileGoal() {
-                if (tileGoal == null) {
+                if (mTileGoal == null) {
                     int left = (int) TILE_WIDTH;
                     int top = (int) TILE_WIDTH;
                     int right = (int) (TILE_WIDTH * 2) - 1;
                     int bottom = (int) (TILE_WIDTH * 2) - 1;
 
-                    tileGoal = new Rect(left, top, right, bottom);
+                    mTileGoal = new Rect(left, top, right, bottom);
                 }
 
-                return tileGoal;
+                return mTileGoal;
             }
 
+            /**
+             * 傳回 bitmap 上 Man 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             public Rect getTileMan(int to) {
                 return tileManFacing[to];
             }
 
+            /**
+             * 傳回 bitmap 上 Wall 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             public Rect getTileWall() {
-                if (tileWall == null) {
+                if (mTileWall == null) {
                     int left = (int) (TILE_WIDTH * 2);
                     int top = 0;
                     int right = (int) (TILE_WIDTH * 3) - 1;
                     int bottom = (int) TILE_WIDTH - 1;
 
-                    tileWall = new Rect(left, top, right, bottom);
+                    mTileWall = new Rect(left, top, right, bottom);
                 }
 
-                return tileWall;
+                return mTileWall;
             }
 
+            /**
+             * 傳回 bitmap 上 ManFaceDown 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             private Rect getTileManFaceDown() {
-                if (tileManFaceDown == null) {
+                if (mTileManFaceDown == null) {
                     int left = (int) TILE_WIDTH;
                     int top = (int) (TILE_WIDTH * 2);
                     int right = (int) (TILE_WIDTH * 2) - 1;
                     int bottom = (int) (TILE_WIDTH * 3) - 1;
 
-                    tileManFaceDown = new Rect(left, top, right, bottom);
+                    mTileManFaceDown = new Rect(left, top, right, bottom);
                 }
 
-                return tileManFaceDown;
+                return mTileManFaceDown;
             }
 
+            /**
+             * 傳回 bitmap 上 ManFaceLeft 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             private Rect getTileManFaceLeft() {
-                if (tileManFaceLeft == null) {
+                if (mTileManFaceLeft == null) {
                     int left = (int) TILE_WIDTH;
                     int top = (int) (TILE_WIDTH * 3);
                     int right = (int) (TILE_WIDTH * 2) - 1;
                     int bottom = (int) (TILE_WIDTH * 4) - 1;
 
-                    tileManFaceLeft = new Rect(left, top, right, bottom);
+                    mTileManFaceLeft = new Rect(left, top, right, bottom);
                 }
 
-                return tileManFaceLeft;
+                return mTileManFaceLeft;
             }
 
+            /**
+             * 傳回 bitmap 上 ManFaceRight 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             private Rect getTileManFaceRight() {
-                if (tileManFaceRight == null) {
+                if (mTileManFaceRight == null) {
                     int left = 0;
                     int top = (int) (TILE_WIDTH * 2);
                     int right = (int) TILE_WIDTH - 1;
                     int bottom = (int) (TILE_WIDTH * 3) - 1;
 
-                    tileManFaceRight = new Rect(left, top, right, bottom);
+                    mTileManFaceRight = new Rect(left, top, right, bottom);
                 }
 
-                return tileManFaceRight;
+                return mTileManFaceRight;
             }
 
+            /**
+             * 傳回 bitmap 上 ManFaceUp 的 Tile 區域 Rect 物件。
+             *
+             * @return Rect 物件。
+             */
             private Rect getTileManFaceUp() {
-                if (tileManFaceUp == null) {
+                if (mTileManFaceUp == null) {
                     int left = 0;
                     int top = (int) (TILE_WIDTH * 3);
                     int right = (int) TILE_WIDTH - 1;
                     int bottom = (int) (TILE_WIDTH * 4) - 1;
 
-                    tileManFaceUp = new Rect(left, top, right, bottom);
+                    mTileManFaceUp = new Rect(left, top, right, bottom);
                 }
 
-                return tileManFaceUp;
+                return mTileManFaceUp;
             }
         };
     }

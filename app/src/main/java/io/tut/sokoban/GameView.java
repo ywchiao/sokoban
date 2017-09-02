@@ -15,13 +15,13 @@ import android.view.View;
 class GameView extends View {
     private static final String TAG = "SOKOBAN";
 
+    private float mButtonGap;
+    private float mButtonWidth;
+
     private float mCellWidth;
 
     private int mPaddingTop;
     private int mPaddingLeft;
-
-    private float mButtonGap;
-    private float mButtonWidth;
 
     private int mManFacing = GameBitmaps.FACE_RIGHT;
 

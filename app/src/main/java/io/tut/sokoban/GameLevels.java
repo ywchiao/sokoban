@@ -48,6 +48,11 @@ class GameLevels {
         return originalLevels.get(level - 1);
     }
 
+    /**
+     * 傳回 _關卡_ 列表。
+     *
+     * @return 關卡名稱的 List<>
+     */
     List<String> getLevelList() {
         List<String> levelList = new ArrayList<>();
 
@@ -60,6 +65,9 @@ class GameLevels {
         return levelList;
     }
 
+    /**
+     * 建構子。
+     */
     private GameLevels() {
         originalLevels.add(LEVEL_I);
         originalLevels.add(LEVEL_II);
